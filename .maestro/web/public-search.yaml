@@ -1,0 +1,29 @@
+url: http://127.0.0.1:4175/
+name: Public homepage and exercise search
+---
+- launchApp
+- assertVisible: "나에게 맞는 운동 찾기"
+- assertVisible: "회원가입 없이, 누구나 가볍게 시작해요"
+- tapOn: "^운동 찾기$"
+- scrollUntilVisible:
+    element:
+      text: "어떤 운동을 찾고 계신가요?"
+    direction: DOWN
+- assertVisible: "관심 운동 분야"
+- tapOn:
+    id: "^interest-field$"
+- tapOn: "^유연성·스트레칭$"
+- assertVisible: "^유연성·스트레칭$"
+- scrollUntilVisible:
+    element:
+      text: "내 조건에 맞는 운동 찾기"
+    direction: DOWN
+- tapOn: "내 조건에 맞는 운동 찾기"
+- extendedWaitUntil:
+    visible: "나의 조건으로 찾은 공개 자료"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: "^기구필라테스$"
+    direction: DOWN
+- assertVisible: "^기구필라테스$"

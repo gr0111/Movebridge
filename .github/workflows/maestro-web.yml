@@ -1,0 +1,91 @@
+name: Maestro web smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-web:
+    name: Maestro / Public web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      VITE_SUPABASE_URL: ''
+      VITE_SUPABASE_PUBLISHABLE_KEY: ''
+      MAESTRO_CLI_NO_ANALYTICS: 'true'
+      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          version: 10.34.3
+          package_json_file: Frontend/package.json
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: Frontend/pnpm-lock.yaml
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Maestro 2.12.1 from the official release
+        shell: bash
+        run: |
+          tool_dir="$RUNNER_TEMP/maestro-cli"
+          mkdir -p "$tool_dir"
+          cd "$tool_dir"
+          curl --fail --silent --show-error --location --retry 3 --output maestro.zip \
+            https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.12.1/maestro.zip
+          printf '%s\n' '54dbb0716425626604973cbb374c585ca30272375d9ce15177a1152765ddd9d7  maestro.zip' | sha256sum --check
+          unzip -q maestro.zip
+          ./maestro/bin/maestro --version
+          echo "$tool_dir/maestro/bin" >> "$GITHUB_PATH"
+      - name: Install and build the public frontend
+        working-directory: Frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Run Maestro against Vite preview
+        shell: bash
+        run: |
+          results_dir="$RUNNER_TEMP/maestro-results"
+          mkdir -p "$results_dir"
+          chrome_driver="${CHROMEWEBDRIVER:?ChromeDriver is expected on ubuntu-24.04}/chromedriver"
+          google-chrome --version
+          "$chrome_driver" --version
+          export MAESTRO_OPTS="-Dwebdriver.chrome.driver=$chrome_driver"
+
+          pnpm --dir Frontend preview --host 127.0.0.1 --port 4175 --strictPort > "$results_dir/vite-preview.log" 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if ! kill -0 "$preview_pid" 2>/dev/null; then
+              cat "$results_dir/vite-preview.log"
+              exit 1
+            fi
+            if curl --fail --silent --max-time 1 http://127.0.0.1:4175/ > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          if ! curl --fail --silent --max-time 1 http://127.0.0.1:4175/ > /dev/null; then
+            cat "$results_dir/vite-preview.log"
+            exit 1
+          fi
+
+          maestro test --no-ansi --headless --screen-size 1440x1000 \
+            --format junit --output "$results_dir/report.xml" \
+            --test-output-dir "$results_dir/artifacts" .maestro/web
+      - name: Upload Maestro reports and logs
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: maestro-web-results
+          path: ${{ runner.temp }}/maestro-results/
+          retention-days: 7

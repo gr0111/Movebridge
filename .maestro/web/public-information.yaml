@@ -1,0 +1,16 @@
+url: http://127.0.0.1:4175/
+name: Public data dashboard and charts
+---
+- launchApp
+- tapOn: "^공공데이터 현황$"
+- assertVisible: "공공체육 데이터 현황"
+- scrollUntilVisible:
+    element:
+      text: "운동 분야별 강좌·기관 영상 비교"
+    direction: DOWN
+- assertVisible: "운동 분야별 강좌·기관 영상 비교"
+- scrollUntilVisible:
+    element:
+      text: "^라켓 스포츠$"
+    direction: DOWN
+- assertVisible: "^라켓 스포츠$"
