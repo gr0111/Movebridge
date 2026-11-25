@@ -1,0 +1,6 @@
+url: http://127.0.0.1:4175/
+name: Public service information
+---
+- launchApp
+- tapOn: "^서비스 소개$"
+- assertVisible: "운동의 시작이 조금 더 쉬워지도록"
