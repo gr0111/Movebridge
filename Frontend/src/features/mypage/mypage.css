@@ -1,0 +1,164 @@
+.mypage {
+  display: grid;
+  gap: 26px;
+}
+
+.mypage-panel,
+.mypage-message {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  min-width: 0;
+  padding: clamp(16px, 3vw, 26px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.mypage-message {
+  background: var(--surface-muted);
+}
+
+.mypage h2 {
+  font-size: clamp(17px, 2.4vw, 22px);
+  font-weight: 700;
+}
+
+.mypage-panel > p,
+.mypage-section-heading p,
+.mypage-caption {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.mypage-profile,
+.mypage-form,
+.mypage-unavailable,
+.mypage-week {
+  width: 100%;
+  min-width: 0;
+}
+
+.mypage-profile {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 12px 20px;
+}
+
+.mypage-profile dt,
+.mypage-form p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.mypage-profile dd {
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.mypage-form,
+.mypage-confirm {
+  display: grid;
+  gap: 8px;
+}
+
+.mypage-form {
+  max-width: 370px;
+}
+
+.mypage-form input {
+  min-width: 0;
+  min-height: 44px;
+  padding-inline: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.mypage-form [aria-invalid="true"] {
+  border-color: #972e43;
+}
+
+.mypage-form .bookmark-error {
+  color: #972e43;
+}
+
+.mypage-actions,
+.mypage-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.mypage-section-heading {
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mypage-panel > .mypage-section-heading {
+  margin-bottom: 0;
+}
+
+.mypage-caption {
+  margin-bottom: 12px;
+}
+
+.mypage-panel button {
+  min-height: 44px;
+}
+
+.mypage-week {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 142px), 1fr));
+  gap: 8px;
+}
+
+.mypage-week section,
+.mypage-unavailable li {
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+
+.mypage-week h3 {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mypage-week .text-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.mypage-week small {
+  color: var(--text-secondary);
+}
+
+.mypage-unavailable {
+  display: grid;
+  gap: 8px;
+}
+
+.mypage-unavailable li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mypage-unavailable code {
+  overflow-wrap: anywhere;
+}
+
+.mypage-unavailable .bookmark-error {
+  flex-basis: 100%;
+}

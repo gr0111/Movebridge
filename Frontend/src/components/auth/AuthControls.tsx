@@ -119,7 +119,7 @@ function AuthDialog({
   );
 }
 
-export default function AuthControls() {
+export default function AuthControls({ request, onMyPage }: { request: number; onMyPage: () => void }) {
   const { client, session, pending, error: startupError, callback } = useAuth();
   const recovery = callback?.action === "recovery";
   const [open, setOpen] = useState(Boolean(callback));
@@ -137,7 +137,17 @@ export default function AuthControls() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
+  const previousRequest = useRef(request);
   const screen = requestedScreen === "account" && !session ? "login" : requestedScreen;
+
+  useEffect(() => {
+    if (previousRequest.current === request) return;
+    previousRequest.current = request;
+    setScreen(session ? "account" : "login");
+    setError("");
+    setNotice("");
+    setOpen(true);
+  }, [request, session]);
 
   function switchTo(next: Screen, message = "") {
     setScreen(next);
@@ -145,8 +155,8 @@ export default function AuthControls() {
     setNotice(message);
   }
 
-  function openAccount() {
-    switchTo(session ? "account" : "login");
+  function openLogin() {
+    switchTo("login");
     setOpen(true);
   }
 
@@ -290,11 +300,12 @@ export default function AuthControls() {
     <>
       <button
         type="button"
-        className="secondary-button auth-entry"
-        onClick={openAccount}
+        className={`secondary-button auth-entry${session ? " auth-entry-member" : ""}`}
+        onClick={session ? onMyPage : openLogin}
         disabled={pending}
       >
-        {pending ? "확인 중…" : session ? "내 계정" : "로그인"}
+        {session && <Icon name="user" size={16} />}
+        {pending ? "확인 중…" : session ? "마이페이지" : "로그인"}
       </button>
       {open && (
         <AuthDialog title={titles[screen]} close={close} busy={busy}>
