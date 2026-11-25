@@ -1,10 +1,9 @@
-import type { CourseBookmarkRepository } from "./bookmark-repository.ts";
-import { matchCourseBookmarks } from "./content-key.ts";
-
-type BookmarkTarget = number | string;
+import type { BookmarkTarget, CourseBookmarkRepository } from "./bookmark-repository.ts";
+import { matchBookmarks } from "./content-key.ts";
 
 type Snapshot = {
   ids: ReadonlySet<number>;
+  videoKeys: ReadonlySet<string>;
   pending: ReadonlySet<BookmarkTarget>;
   errors: ReadonlyMap<BookmarkTarget, string>;
   status: "loading" | "error" | "ready";
@@ -15,9 +14,11 @@ export function createBookmarkStore(
   owner: string | null,
   knownIds: ReadonlySet<number>,
   repository: CourseBookmarkRepository | null,
+  knownVideoKeys: ReadonlySet<string> = new Set(),
 ) {
   let snapshot: Snapshot = {
     ids: new Set(),
+    videoKeys: new Set(),
     pending: new Set(),
     errors: new Map(),
     status: owner ? "loading" : "ready",
@@ -43,7 +44,7 @@ export function createBookmarkStore(
     try {
       const keys = await repository.list(request.controller.signal);
       if (request === lifecycle)
-        update({ ...matchCourseBookmarks(keys, knownIds), status: "ready" });
+        update({ ...matchBookmarks(keys, knownIds, knownVideoKeys), status: "ready" });
     } catch {
       if (request === lifecycle) update({ status: "error" });
     } finally {
@@ -61,11 +62,11 @@ export function createBookmarkStore(
     };
   }
 
-  function applyToggle(id: number, removing: boolean) {
-    const ids = new Set(snapshot.ids);
-    if (removing) ids.delete(id);
-    else ids.add(id);
-    update({ ids });
+  function toggleItem<T>(items: ReadonlySet<T>, target: T, removing: boolean) {
+    const next = new Set(items);
+    if (removing) next.delete(target);
+    else next.add(target);
+    return next;
   }
 
   async function mutate(
@@ -98,21 +99,28 @@ export function createBookmarkStore(
     }
   }
 
-  async function toggle(id: number) {
-    if (!knownIds.has(id) || snapshot.status !== "ready") return;
-    const removing = snapshot.ids.has(id);
+  async function toggle(target: BookmarkTarget) {
+    const isCourse = typeof target === "number";
+    const known = isCourse ? knownIds.has(target) : knownVideoKeys.has(target);
+    if (!known || snapshot.status !== "ready") return;
+    const removing = isCourse ? snapshot.ids.has(target) : snapshot.videoKeys.has(target);
+    const subject = isCourse ? "강좌를" : "영상을";
+    const applyToggle = () => {
+      if (isCourse) update({ ids: toggleItem(snapshot.ids, target, removing) });
+      else update({ videoKeys: toggleItem(snapshot.videoKeys, target, removing) });
+    };
     if (!owner) {
-      applyToggle(id, removing);
+      applyToggle();
       return;
     }
     if (!repository) return;
     await mutate(
-      id,
-      (signal) => (removing ? repository.remove(id, signal) : repository.save(id, signal)),
-      () => applyToggle(id, removing),
+      target,
+      (signal) => (removing ? repository.remove(target, signal) : repository.save(target, signal)),
+      applyToggle,
       removing
-        ? "관심 강좌를 해제하지 못했어요. 버튼을 다시 눌러 주세요."
-        : "관심 강좌를 저장하지 못했어요. 버튼을 다시 눌러 주세요.",
+        ? `관심 ${subject} 해제하지 못했어요. 버튼을 다시 눌러 주세요.`
+        : `관심 ${subject} 저장하지 못했어요. 버튼을 다시 눌러 주세요.`,
     );
   }
 

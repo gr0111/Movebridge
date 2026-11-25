@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Icon, { type IconName } from "./components/Icon";
 import DiscoveryResults from "./components/DiscoveryResults";
 import DiscoveryAnalysis from "./components/DiscoveryAnalysis";
@@ -20,6 +20,7 @@ import SportPictogram from "./components/SportPictogram";
 import {
   courses,
   videos,
+  onlineVideos,
   days,
   sampleCharts,
   searchableCourses,
@@ -33,6 +34,7 @@ import type { Course, Video } from "./data/search";
 import AuthControls from "./components/auth/AuthControls";
 import { useAuth } from "./auth/AuthProvider";
 import { useBookmarks } from "./features/bookmarks/useBookmarks";
+import { videoContentKey } from "./features/bookmarks/content-key";
 import MyPage from "./features/mypage/MyPage";
 import { myPageAccess, readMyPageLocation, withMyPageLocation } from "./features/mypage/mypage-view";
 
@@ -320,6 +322,7 @@ function App() {
     );
   };
   const selectedCourses = courses.filter((c) => saved.has(c.id));
+  const selectedVideos = onlineVideos.filter((video) => bookmarks.videoKeys.has(videoContentKey(video) ?? ""));
   const access = myPageAccess(auth.pending, auth.session?.user.id ?? null);
   const openAccount = () => setAccountRequest((count) => count + 1);
   const renderCourse = (course: Course, showBeginner = false) => (
@@ -332,6 +335,17 @@ function App() {
       saveError={bookmarks.errors.get(course.id)}
       onSave={() => toggleSaved(course.id)}
       onDetail={() => setDetail(course)}
+    />
+  );
+  const renderVideo = (video: Video, index: number, showBeginner = false) => (
+    <VideoCard
+      key={videoContentKey(video)}
+      video={video}
+      index={index}
+      showBeginner={showBeginner}
+      onClick={() => setVideoDetail(video)}
+      bookmark={<VideoBookmark video={video} bookmarks={bookmarks} />}
+      bookmarkError={bookmarks.errors.get(videoContentKey(video) ?? "")}
     />
   );
 
@@ -693,15 +707,7 @@ function App() {
                     searchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
                   }}
                   renderCourse={renderCourse}
-                  renderVideo={(video, index, showBeginner) => (
-                    <VideoCard
-                      key={video.id}
-                      video={video}
-                      index={index}
-                      showBeginner={showBeginner}
-                      onClick={() => setVideoDetail(video)}
-                    />
-                  )}
+                  renderVideo={renderVideo}
                 />
               </section>
               <section className="bottom-banner">
@@ -894,8 +900,10 @@ function App() {
                 user={auth.session.user}
                 bookmarks={bookmarks}
                 courses={selectedCourses}
+                videos={selectedVideos}
                 formatTime={time}
                 renderCourse={renderCourse}
+                renderVideo={renderVideo}
                 openCourse={setDetail}
                 navigate={navigate}
                 openAccount={openAccount}
@@ -1465,6 +1473,12 @@ function App() {
                 </a>
               </>
             )}
+            {!detail && videoDetail && (
+              <>
+                <BookmarkStatus bookmarks={bookmarks} guestNote />
+                <VideoBookmark video={videoDetail} bookmarks={bookmarks} showText />
+              </>
+            )}
           </section>
         </div>
       )}
@@ -1479,11 +1493,11 @@ function BookmarkStatus({
   guestNote?: boolean;
 }) {
   if (bookmarks.loading)
-    return <p className="section-footnote" role="status">저장된 강좌를 불러오는 중이에요.</p>;
+    return <p className="section-footnote" role="status">북마크를 불러오는 중이에요.</p>;
   if (bookmarks.status === "error")
     return (
       <div className="section-footnote">
-        <p role="alert">저장된 강좌를 불러오지 못했어요.</p>
+        <p role="alert">북마크를 불러오지 못했어요.</p>
         <button className="text-button" onClick={bookmarks.retry}>다시 불러오기</button>
       </div>
     );
@@ -1649,16 +1663,51 @@ function DataSourceCard({ source }: { source: PublicDataSource }) {
   );
 }
 
+function VideoBookmark({ video, bookmarks, showText = false }: {
+  video: Video;
+  bookmarks: ReturnType<typeof useBookmarks>;
+  showText?: boolean;
+}) {
+  const key = videoContentKey(video);
+  if (!key) return null;
+  const saved = bookmarks.videoKeys.has(key);
+  const saving = bookmarks.pending.has(key);
+  const label = saving ? "북마크 처리 중" : saved ? "영상 북마크 해제" : "영상 북마크 저장";
+  const error = bookmarks.errors.get(key);
+  return (
+    <div className={showText ? "video-modal-bookmark" : "video-bookmark"}>
+      <button
+        type="button"
+        className={showText ? "secondary-button bookmark-action" :
+          `bookmark-button bookmark-action${saved ? " is-saved" : ""}`}
+        aria-label={`${video.title} ${label}`}
+        aria-pressed={bookmarks.ready ? saved : undefined}
+        aria-busy={saving}
+        disabled={!bookmarks.ready || saving}
+        onClick={() => bookmarks.toggle(key)}
+      >
+        <Icon name={showText && saved ? "check" : "bookmark"} size={20} />
+        {showText && label}
+      </button>
+      {error && showText && <p className="bookmark-error" role="alert">{error}</p>}
+    </div>
+  );
+}
+
 function VideoCard({
   video,
   index,
   onClick,
   showBeginner = false,
+  bookmark,
+  bookmarkError,
 }: {
   video: Video;
   index: number;
   onClick: () => void;
   showBeginner?: boolean;
+  bookmark: ReactNode;
+  bookmarkError?: string;
 }) {
   const external = video.source === "youtube" ? video : null;
   return (
@@ -1709,9 +1758,13 @@ function VideoCard({
             </>
           )}
         </div>
-        <button className="video-title" onClick={onClick}>
-          {video.title}
-        </button>
+        <div className="video-title-row">
+          <button className="video-title" onClick={onClick}>
+            {video.title}
+          </button>
+          {bookmark}
+        </div>
+        {bookmarkError && <p className="bookmark-error" role="alert">{bookmarkError}</p>}
         {video.source === "youtube" ? (
           <>
             <p>{video.channel}</p>
