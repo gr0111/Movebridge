@@ -16,12 +16,12 @@ import {
   classifyVideo,
   searchDiscovery,
   groupByBeginner,
-  discoveryDistribution,
   beginnerTotals,
   beginnerChart,
   courseDiscovery,
   videoDiscovery,
 } from "./discovery.ts";
+import { discoveryDistribution } from "./public-data-analysis.ts";
 
 const all = {
   mode: "all",

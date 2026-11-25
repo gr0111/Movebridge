@@ -139,8 +139,8 @@ const sportCounts = [...new Set(courses.map((course) => course.sport))]
   .sort((a, b) => b.value - a.value);
 export const sampleCharts = [
   {
-    title: "운동 종목별 강좌 기록 수",
-    labels: [...sportCounts.slice(0, 5).map((item) => item.label), "기타"],
+    title: "원본 종목 표기별 강좌 기록 수",
+    labels: [...sportCounts.slice(0, 5).map((item) => item.label), "그 외 종목 표기"],
     values: [
       ...sportCounts.slice(0, 5).map((item) => item.value),
       sportCounts.slice(5).reduce((sum, item) => sum + item.value, 0),

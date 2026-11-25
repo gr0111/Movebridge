@@ -630,6 +630,30 @@
   line-height: 1.9;
   margin-top: 22px;
 }
+.distribution-detail {
+  margin-top: 14px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.distribution-detail summary {
+  color: var(--accent);
+  cursor: pointer;
+}
+.distribution-detail table {
+  width: 100%;
+  margin: 10px 0;
+  border-collapse: collapse;
+}
+.distribution-detail th,
+.distribution-detail td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.distribution-detail td {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
 .beginner-analysis {
   display: flex;
   flex-direction: column;

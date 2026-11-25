@@ -10,9 +10,9 @@ import {
   experienceOptions,
   searchDiscovery,
   classifyCourse,
-  discoveryDistribution,
   beginnerTotals,
 } from "./discovery.ts";
+import { discoveryDistribution } from "./public-data-analysis.ts";
 
 const externalDisciplines = (field) =>
   onlineVideos.flatMap((video) =>

@@ -14,8 +14,8 @@ import {
   classifyCourse,
   searchDiscovery,
   getDetailOptions,
-  discoveryDistribution,
 } from "./discovery.ts";
+import { analyzedCourses, discoveryDistribution } from "./public-data-analysis.ts";
 import {
   COURSE_PAGE_SIZE,
   COURSE_LOAD_MORE_SIZE,
@@ -143,9 +143,9 @@ test("all source counts and original-wording analysis stay intact; unresolved sp
   for (const row of discoveryDistribution)
     assert.equal(
       row.offline,
-      courses.filter((course) => classifyCourse(course, false).field === row.field).length,
+      courses.filter((course) => analyzedCourses.get(course.id).field === row.field).length,
     );
-  assert.equal(discoveryDistribution.find((row) => row.field === "기타 운동").offline, 348);
+  assert.equal(discoveryDistribution.find((row) => row.field === "라켓 스포츠").offline, 171);
   for (const index of [0, 1, 3])
     assert.equal(
       sampleCharts[index].values.reduce((sum, value) => sum + value, 0),

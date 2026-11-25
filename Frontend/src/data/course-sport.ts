@@ -50,7 +50,7 @@ const sportIcons: Record<string, SportIconKey> = {
   댄스스포츠: "dance-sport",
   수영: "swimming",
 };
-const aliases: Record<string, string> = {
+export const courseSportAliases: Readonly<Record<string, string>> = {
   "배드민턴 단기속성": "배드민턴",
   탁구단기속성: "탁구",
   실내승마교실: "실내승마",
@@ -76,7 +76,7 @@ export function inferHolidaySport(course: { sport: string; title: string }) {
 export function resolveCourseSport(course: { sport: string; title: string }) {
   const rawSport = course.sport.trim();
   const inference = inferHolidaySport(course);
-  let displaySport = aliases[rawSport] || rawSport;
+  let displaySport = courseSportAliases[rawSport] || rawSport;
   if (rawSport === "댄스스포츠") {
     const dance = course.title.trim().match(/^(?:\d{2,4}\.\s*)?(모던|라틴)/);
     if (dance) displaySport = dance[1];

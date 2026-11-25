@@ -9,7 +9,7 @@ import {
   searchableCourses,
   matchesCourseQuery,
 } from "./search.ts";
-import { inferHolidaySport } from "./course-sport.ts";
+import { classifyAnalysisCourse } from "./public-data-analysis.ts";
 import type { Course, Video, Filters } from "./search.ts";
 
 export const interestFields = [
@@ -63,23 +63,13 @@ export function analyzeBeginnerTitle(title: string) {
 
 export function classifyCourse(
   course: Pick<Course, "title" | "sport">,
-  includeInferred = true,
 ): {
   field: ContentField;
   evidence: string;
 } {
-  const inference = includeInferred ? inferHolidaySport(course) : null;
-  if (inference) return { field: "기타 운동", evidence: inference.evidence };
-  for (const [source, text] of [
-    ["종목", course.sport],
-    ["강좌명", course.title.replace(/헬스\s*등록\s*필수/g, "")],
-  ]) {
-    for (const rule of fieldRules) {
-      const term = rule.terms.find((term) => normalize(text).includes(normalize(term)));
-      if (term) return { field: rule.field, evidence: `${source}에 '${term}' 표기` };
-    }
-  }
-  return { field: "분류 확인 필요", evidence: "명시적 종목·강좌명 근거 미확인" };
+  const { field, evidence } = classifyAnalysisCourse(course);
+  if (field === "분류 확인 필요" || field === "운동 외 콘텐츠") return { field, evidence };
+  return { field: interestFields.find((interest) => interest === field) ?? "기타 운동", evidence };
 }
 export function classifyVideo(video: Pick<Video, "title" | "sport">): {
   field: ContentField;
@@ -266,20 +256,13 @@ export function searchDiscovery(filters: DiscoveryFilters, sort: ResultSort = "d
   return { offline, online, related, prioritize };
 }
 
-const fields: ContentField[] = [...interestFields, "분류 확인 필요", "운동 외 콘텐츠"];
-export const discoveryDistribution = fields.map((field) => ({
-  field,
-  // Keep the existing original-wording analysis separate from unverified display aliases.
-  offline: courses.filter((course) => classifyCourse(course, false).field === field).length,
-  online: videos.filter((video) => videoDiscovery.get(video.id)!.field === field).length,
-}));
 export const beginnerTotals = {
   offline: [...courseDiscovery.values()].filter((record) => record.hasBeginnerKeyword).length,
   online: videos.filter((video) => videoDiscovery.get(video.id)!.hasBeginnerKeyword).length,
 };
 export const beginnerChart = {
-  title: "원본 제목의 입문 관련 표현 포함 기록",
-  labels: ["강좌·포함", "강좌·미확인", "영상·포함", "영상·미확인"],
+  title: "원본 제목의 입문 관련 표현 유무",
+  labels: ["강좌 · 표현 포함", "강좌 · 표현 없음", "영상 · 표현 포함", "영상 · 표현 없음"],
   values: [
     beginnerTotals.offline,
     courses.length - beginnerTotals.offline,
