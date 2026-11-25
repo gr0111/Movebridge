@@ -38,6 +38,9 @@ import { videoContentKey } from "./features/bookmarks/content-key";
 import MyPage from "./features/mypage/MyPage";
 import WeeklySchedule from "./features/workout-planner/WeeklySchedule";
 import { useWorkoutPlanner } from "./features/workout-planner/useWorkoutPlanner";
+import WorkoutSummary from "./features/workout-planner/WorkoutSummary";
+import WorkoutRoadmap from "./features/onboarding/WorkoutRoadmap";
+import { initialRoadmap, originalVideoLink } from "./features/onboarding/roadmap";
 import { myPageAccess, readMyPageLocation, withMyPageLocation } from "./features/mypage/mypage-view";
 
 function Brand({ small = false }: { small?: boolean }) {
@@ -197,7 +200,7 @@ function SportsIllustration() {
   );
 }
 
-type Page = "home" | "schedule" | "data" | "about" | "mypage";
+type Page = "home" | "schedule" | "data" | "about" | "mypage" | "onboarding";
 const initialFilters: Filters = {
   field: "전체 분야",
   experience: "상관없음",
@@ -276,9 +279,14 @@ function App() {
   const [page, setPage] = useState<Page>(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.get("view") === "schedule") return "schedule";
+    if (url.searchParams.get("view") === "onboarding") return "onboarding";
     return readMyPageLocation(url) ? "mypage" : "home";
   });
-  const planner = useWorkoutPlanner(page === "schedule" || page === "mypage");
+  const [roadmap, setRoadmap] = useState(initialRoadmap);
+  const [requestWorkout, setRequestWorkout] = useState(false);
+  const planner = useWorkoutPlanner(
+    page === "schedule" || page === "mypage" || (page === "onboarding" && roadmap.step === 3),
+  );
   const [accountRequest, setAccountRequest] = useState(0);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [applied, setApplied] = useState<Filters>(initialFilters);
@@ -295,10 +303,12 @@ function App() {
   const navigate = (next: Page) => {
     const current = new URL(window.location.href);
     const destination = withMyPageLocation(current, next === "mypage");
-    if (next === "schedule") destination.searchParams.set("view", "schedule");
-    else if (destination.searchParams.get("view") === "schedule") destination.searchParams.delete("view");
+    if (next === "schedule" || next === "onboarding") destination.searchParams.set("view", next);
+    else if (["schedule", "onboarding"].includes(destination.searchParams.get("view") ?? ""))
+      destination.searchParams.delete("view");
     if (destination.href !== current.href) window.history.replaceState(window.history.state, "", destination);
     setPage(next);
+    if (next !== "schedule") setRequestWorkout(false);
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -331,6 +341,8 @@ function App() {
   const selectedVideos = onlineVideos.filter((video) => bookmarks.videoKeys.has(videoContentKey(video) ?? ""));
   const access = myPageAccess(auth.pending, auth.session?.user.id ?? null);
   const openAccount = () => setAccountRequest((count) => count + 1);
+  const openSchedule = () => navigate("schedule");
+  const videoDetailUrl = originalVideoLink(videoDetail?.url);
   const renderCourse = (course: Course, showBeginner = false) => (
     <CourseCard
       key={course.id}
@@ -428,6 +440,13 @@ function App() {
                   <span className="tiny-dot" />
                   회원가입 없이, 누구나 가볍게 시작해요
                 </div>
+                <button
+                  className="secondary-button roadmap-home-link"
+                  type="button"
+                  onClick={() => navigate("onboarding")}
+                >
+                  나의 운동 첫걸음 <Icon name="arrow" size={16} />
+                </button>
               </div>
               <SportsIllustration />
             </section>
@@ -733,6 +752,33 @@ function App() {
           </>
         )}
 
+        {page === "onboarding" && (
+          <WorkoutRoadmap
+            state={roadmap}
+            onChange={setRoadmap}
+            renderCourse={renderCourse}
+            renderVideo={renderVideo}
+            bookmarkStatus={<BookmarkStatus bookmarks={bookmarks} guestNote />}
+            bookmarksReady={bookmarks.ready}
+            savedCourses={selectedCourses}
+            planSummary={
+              auth.session ? (
+                <WorkoutSummary planner={planner} openSchedule={openSchedule} />
+              ) : (
+                <p className="section-footnote">
+                  개인 운동 계획과 완료 기록은 로그인한 계정에서 볼 수 있어요.
+                </p>
+              )
+            }
+            openSchedule={openSchedule}
+            addWorkout={() => {
+              openSchedule();
+              if (auth.session) setRequestWorkout(true);
+              else openAccount();
+            }}
+          />
+        )}
+
         {page === "schedule" && (
           <div className="container subpage">
             <PageHeading
@@ -788,6 +834,8 @@ function App() {
               openCourse={setDetail}
               openAccount={openAccount}
               findCourses={() => navigate("home")}
+              requestCreate={requestWorkout}
+              onCreateOpened={() => setRequestWorkout(false)}
             />
             {!!selectedCourses.length && (
               <div className="saved-list">
@@ -842,6 +890,7 @@ function App() {
                 openCourse={setDetail}
                 navigate={navigate}
                 openAccount={openAccount}
+                openRoadmap={() => navigate("onboarding")}
               />
             ) : (
               <section className="mypage-panel" aria-label="마이페이지 로그인 안내">
@@ -1347,15 +1396,14 @@ function App() {
                   제공된 검증 기록에서 확인한 표본 구간의 판단입니다. 영상 전체의 공식 난이도나
                   개인별 운동 적합성을 보장하지 않습니다.
                 </p>
-                <a
-                  className="primary-button full-width"
-                  href={videoDetail.url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  YouTube 원본 영상 열기
-                  <Icon name="external" size={16} />
-                </a>
+                {videoDetailUrl ? (
+                  <a className="primary-button full-width" href={videoDetailUrl} target="_blank" rel="noreferrer">
+                    YouTube 원본 영상 열기
+                    <Icon name="external" size={16} />
+                  </a>
+                ) : (
+                  <p className="section-footnote">원본 영상 링크가 제공되지 않았어요.</p>
+                )}
               </>
             ) : (
               <>
@@ -1378,15 +1426,14 @@ function App() {
                   <div>
                     <dt>공식 영상 링크</dt>
                     <dd>
-                      <a
-                        className="text-button"
-                        href={videoDetail?.url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        공식 영상 안내 페이지
-                        <Icon name="external" size={13} />
-                      </a>
+                      {videoDetailUrl ? (
+                        <a className="text-button" href={videoDetailUrl} target="_blank" rel="noreferrer">
+                          공식 영상 안내 페이지
+                          <Icon name="external" size={13} />
+                        </a>
+                      ) : (
+                        "원본 영상 링크가 제공되지 않았어요."
+                      )}
                     </dd>
                   </div>
                 </dl>
@@ -1395,15 +1442,12 @@ function App() {
                   확인 완료를 뜻하지 않습니다. 실제 열람 가능성과 영상 내용은 검증되지 않았고, 특정
                   오프라인 강좌와 연결되지 않습니다.
                 </p>
-                <a
-                  className="primary-button full-width"
-                  href={videoDetail?.url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  공식 영상 안내 페이지 열기
-                  <Icon name="external" size={16} />
-                </a>
+                {videoDetailUrl && (
+                  <a className="primary-button full-width" href={videoDetailUrl} target="_blank" rel="noreferrer">
+                    공식 영상 안내 페이지 열기
+                    <Icon name="external" size={16} />
+                  </a>
+                )}
               </>
             )}
             {!detail && videoDetail && (
@@ -1643,6 +1687,7 @@ function VideoCard({
   bookmarkError?: string;
 }) {
   const external = video.source === "youtube" ? video : null;
+  const videoUrl = originalVideoLink(video.url);
   return (
     <article className="video-card">
       <button
@@ -1710,10 +1755,14 @@ function VideoCard({
           영상 정보 확인
           <Icon name="arrow" size={14} />
         </button>
-        <a className="video-detail-link" href={video.url} target="_blank" rel="noreferrer">
-          {external ? "YouTube 원본 영상" : "공식 영상 링크"}
-          <Icon name="external" size={13} />
-        </a>
+        {videoUrl ? (
+          <a className="video-detail-link" href={videoUrl} target="_blank" rel="noreferrer">
+            {external ? "YouTube 원본 영상" : "공식 영상 링크"}
+            <Icon name="external" size={13} />
+          </a>
+        ) : (
+          <p>원본 영상 링크가 제공되지 않았어요.</p>
+        )}
       </div>
     </article>
   );

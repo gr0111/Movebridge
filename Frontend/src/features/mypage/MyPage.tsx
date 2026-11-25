@@ -25,6 +25,7 @@ type Props = {
   openCourse: (course: Course) => void;
   navigate: (page: "home" | "schedule") => void;
   openAccount: () => void;
+  openRoadmap: () => void;
 };
 
 function LoadError({ message, retry }: { message: string; retry: () => void }) {
@@ -51,6 +52,7 @@ export default function MyPage({
   openCourse,
   navigate,
   openAccount,
+  openRoadmap,
 }: Props) {
   const profile = useProfile(client, user.id);
   const [editing, setEditing] = useState(false);
@@ -160,6 +162,9 @@ export default function MyPage({
       </section>
 
       <WorkoutSummary planner={planner} openSchedule={() => navigate("schedule")} />
+      <button type="button" className="secondary-button mypage-roadmap-link" onClick={openRoadmap}>
+        나의 운동 첫걸음
+      </button>
 
       {bookmarks.loading && <p role="status">저장한 강좌를 불러오는 중이에요.</p>}
       {bookmarks.status === "error" && (
