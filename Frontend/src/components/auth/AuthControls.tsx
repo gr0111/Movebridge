@@ -155,8 +155,8 @@ export default function AuthControls({ request, onMyPage }: { request: number; o
     setNotice(message);
   }
 
-  function openAccount() {
-    switchTo(session ? "account" : "login");
+  function openLogin() {
+    switchTo("login");
     setOpen(true);
   }
 
@@ -300,11 +300,12 @@ export default function AuthControls({ request, onMyPage }: { request: number; o
     <>
       <button
         type="button"
-        className="secondary-button auth-entry"
-        onClick={openAccount}
+        className={`secondary-button auth-entry${session ? " auth-entry-member" : ""}`}
+        onClick={session ? onMyPage : openLogin}
         disabled={pending}
       >
-        {pending ? "확인 중…" : session ? "내 계정" : "로그인"}
+        {session && <Icon name="user" size={16} />}
+        {pending ? "확인 중…" : session ? "마이페이지" : "로그인"}
       </button>
       {open && (
         <AuthDialog title={titles[screen]} close={close} busy={busy}>
@@ -398,10 +399,6 @@ export default function AuthControls({ request, onMyPage }: { request: number; o
                     <p className="auth-note">
                       로그인한 상태에서 담은 강좌는 이 계정에 저장됩니다.
                     </p>
-                    <button type="button" className="primary-button" disabled={busy} onClick={() => {
-                      setOpen(false);
-                      onMyPage();
-                    }}>마이페이지</button>
                     <button
                       type="button"
                       className="secondary-button"

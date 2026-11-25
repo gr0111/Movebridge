@@ -5,6 +5,13 @@
   padding: 6px 13px;
 }
 
+@media (560px < width <= 760px) {
+  .header-inner:has(.auth-entry-member),
+  .header-inner:has(.auth-entry-member) .main-nav {
+    gap: 10px;
+  }
+}
+
 .auth-entry:disabled,
 .auth-dialog button:disabled {
   opacity: 0.65;

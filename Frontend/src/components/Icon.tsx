@@ -18,6 +18,7 @@ export type IconName =
   | "reset"
   | "grid"
   | "leaf"
+  | "user"
   | "menu";
 export default function Icon({
   name,
@@ -29,6 +30,12 @@ export default function Icon({
   className?: string;
 }) {
   const paths: Record<IconName, ReactNode> = {
+    user: (
+      <>
+        <circle cx="12" cy="8" r="3.25" />
+        <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
+      </>
+    ),
     search: (
       <>
         <circle cx="10.8" cy="10.8" r="6.8" />
