@@ -884,14 +884,16 @@ function App() {
                 },
               ].map((s) => (
                 <div className="stat-card" key={s.label}>
-                  <span className="stat-icon">
-                    <Icon name={s.icon as IconName} size={23} />
-                  </span>
                   <p>{s.label}</p>
-                  <strong>
-                    {s.value}
-                    <span>{s.unit}</span>
-                  </strong>
+                  <div className="stat-value">
+                    <span className="stat-icon" aria-hidden="true">
+                      <Icon name={s.icon as IconName} size={23} />
+                    </span>
+                    <strong>
+                      {s.value}
+                      <span>{s.unit}</span>
+                    </strong>
+                  </div>
                   <small>{s.note}</small>
                 </div>
               ))}

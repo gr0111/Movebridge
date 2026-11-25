@@ -1966,16 +1966,17 @@
   margin-bottom: 28px;
 }
 .stat-card {
-  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 26px;
 }
 .stat-icon {
-  position: absolute;
-  right: 22px;
-  top: 24px;
+  display: grid;
+  flex: none;
+  place-items: center;
   background: var(--brand-tint);
   color: var(--accent);
   padding: 11px;
@@ -1985,15 +1986,20 @@
   font-size: 12px;
   color: var(--text-secondary);
 }
-.stat-card > strong {
-  display: block;
+.stat-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 7px;
+}
+.stat-value > strong {
   font-family: "DM Sans", sans-serif;
   font-weight: 600;
   font-size: 40px;
   color: var(--accent);
-  margin: 12px 0 7px;
+  white-space: nowrap;
 }
-.stat-card > strong > span {
+.stat-value > strong > span {
   font-family: "Noto Sans KR", sans-serif;
   font-size: 15px;
   font-weight: 400;
@@ -2536,12 +2542,12 @@
     padding: 20px 15px;
   }
   .stat-icon {
-    display: none;
+    padding: 8px;
   }
   .stat-card > p {
     font-size: 11px;
   }
-  .stat-card > strong {
+  .stat-value > strong {
     font-size: 33px;
   }
   .stat-card > small {
@@ -2969,12 +2975,7 @@
   .stat-card {
     padding: 21px;
   }
-  .stat-icon {
-    display: block;
-    right: 22px;
-    top: 22px;
-  }
-  .stat-card > strong {
+  .stat-value {
     margin-top: 8px;
   }
   .charts-grid {
