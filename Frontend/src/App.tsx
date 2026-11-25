@@ -36,6 +36,8 @@ import { useAuth } from "./auth/AuthProvider";
 import { useBookmarks } from "./features/bookmarks/useBookmarks";
 import { videoContentKey } from "./features/bookmarks/content-key";
 import MyPage from "./features/mypage/MyPage";
+import WeeklySchedule from "./features/workout-planner/WeeklySchedule";
+import { useWorkoutPlanner } from "./features/workout-planner/useWorkoutPlanner";
 import { myPageAccess, readMyPageLocation, withMyPageLocation } from "./features/mypage/mypage-view";
 
 function Brand({ small = false }: { small?: boolean }) {
@@ -271,9 +273,12 @@ function App() {
   const bookmarks = useBookmarks();
   const saved = bookmarks.ids;
   const toggleSaved = bookmarks.toggle;
-  const [page, setPage] = useState<Page>(() =>
-    readMyPageLocation(new URL(window.location.href)) ? "mypage" : "home",
-  );
+  const [page, setPage] = useState<Page>(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("view") === "schedule") return "schedule";
+    return readMyPageLocation(url) ? "mypage" : "home";
+  });
+  const planner = useWorkoutPlanner(page === "schedule" || page === "mypage");
   const [accountRequest, setAccountRequest] = useState(0);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [applied, setApplied] = useState<Filters>(initialFilters);
@@ -289,9 +294,10 @@ function App() {
   const searchRef = useRef<HTMLFormElement>(null);
   const navigate = (next: Page) => {
     const current = new URL(window.location.href);
-    if (next === "mypage" || readMyPageLocation(current)) {
-      window.history.replaceState(window.history.state, "", withMyPageLocation(current, next === "mypage"));
-    }
+    const destination = withMyPageLocation(current, next === "mypage");
+    if (next === "schedule") destination.searchParams.set("view", "schedule");
+    else if (destination.searchParams.get("view") === "schedule") destination.searchParams.delete("view");
+    if (destination.href !== current.href) window.history.replaceState(window.history.state, "", destination);
     setPage(next);
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -739,7 +745,7 @@ function App() {
               <div>
                 <strong>나의 움직임을 미리 그려보는 참고용 시간표예요.</strong>
                 <p>
-                  공개 데이터에 기록된 요일과 시간으로 구성하며, 실제 수강이나 참여가 확정된 일정이
+                  공공데이터 강좌는 기록된 요일과 시간으로 표시하며, 실제 수강이나 참여가 확정된 일정이
                   아닙니다. 원본 데이터의 괄호 안 요일은 의미가 확인되지 않아 별도 확인이
                   필요합니다. 괄호 안 요일은 시간표에서 제외하며 기본 표기만 반영합니다. 장시간 검토
                   표시가 있는 기록은 확정된 수업 길이로 해석하지 마세요.
@@ -773,88 +779,16 @@ function App() {
                 현재 강좌 데이터와 연결되지 않는 북마크 {bookmarks.unavailableCount}건은 계정에 보관되어 있어요.
               </p>
             )}
-            {selectedCourses.some((a, i) =>
-              selectedCourses.some(
-                (b, j) =>
-                  i < j &&
-                  a.days.some((d) => b.days.includes(d)) &&
-                  a.start < b.end &&
-                  b.start < a.end,
-              ),
-            ) && (
-              <div className="conflict-notice">
-                <Icon name="info" size={18} />
-                시간이 겹치는 강좌가 있어요. 겹친 일정은 나란히 표시했으니 요일과 시간을 확인해
-                주세요.
-              </div>
-            )}
-            <div className="timetable-wrapper" hidden={!bookmarks.ready}>
-              <div className="timetable">
-                <div className="timetable-top">
-                  <span>시간</span>
-                  {days.map((d) => (
-                    <span key={d}>{d}요일</span>
-                  ))}
-                </div>
-                <div className="timetable-body">
-                  <div className="time-labels">
-                    {Array.from({ length: 17 }, (_, i) => (
-                      <span key={i}>{String(i + 6).padStart(2, "0")}:00</span>
-                    ))}
-                  </div>
-                  {days.map((_, d) => (
-                    <div key={d} className="day-column">
-                      {Array.from({ length: 16 }, (_, i) => (
-                        <div className="hour-cell" key={i} />
-                      ))}
-                      {selectedCourses
-                        .filter((c) => c.days.includes(d))
-                        .map((c, i, dayCourses) => {
-                          const overlapping = dayCourses.filter(
-                            (other) =>
-                              other.id !== c.id && c.start < other.end && other.start < c.end,
-                          );
-                          const offset = overlapping.length
-                            ? dayCourses.filter(
-                                (other) =>
-                                  other.id < c.id && c.start < other.end && other.start < c.end,
-                              ).length
-                            : 0;
-                          return (
-                            <button
-                              className={`calendar-event event-${i % 3}`}
-                              style={{
-                                top: `${(c.start - 6) * 64}px`,
-                                height: `${Math.max((c.end - c.start) * 64, 52)}px`,
-                                width: `calc(${100 / (overlapping.length + 1)}% - 6px)`,
-                                left: `calc(${(offset * 100) / (overlapping.length + 1)}% + 3px)`,
-                              }}
-                              onClick={() => setDetail(c)}
-                              key={c.id}
-                            >
-                              <strong>{c.title}</strong>
-                              <span>
-                                {time(c.start)}–{time(c.end)}
-                              </span>
-                            </button>
-                          );
-                        })}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {bookmarks.ready && !saved.size && (
-                <div className="schedule-empty">
-                  <Icon name="calendar" size={32} />
-                  <h3>아직 담은 강좌가 없어요.</h3>
-                  <p>강좌 카드의 북마크를 눌러 나의 일주일을 채워보세요.</p>
-                  <button className="primary-button" onClick={() => navigate("home")}>
-                    운동 찾으러 가기
-                    <Icon name="arrow" size={16} />
-                  </button>
-                </div>
-              )}
-            </div>
+            <WeeklySchedule
+              key={planner.owner ?? "guest"}
+              planner={planner}
+              courses={selectedCourses}
+              bookmarksReady={bookmarks.ready}
+              formatTime={time}
+              openCourse={setDetail}
+              openAccount={openAccount}
+              findCourses={() => navigate("home")}
+            />
             {!!selectedCourses.length && (
               <div className="saved-list">
                 <h3>담아둔 강좌</h3>
@@ -899,6 +833,7 @@ function App() {
                 client={auth.client}
                 user={auth.session.user}
                 bookmarks={bookmarks}
+                planner={planner}
                 courses={selectedCourses}
                 videos={selectedVideos}
                 formatTime={time}
