@@ -1,18 +1,25 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { courseContentKey, courseKeyPrefix } from "./content-key.ts";
+import { bookmarkKind, courseContentKey, isVideoContentKey } from "./content-key.ts";
+
+export type BookmarkTarget = number | string;
 
 export type CourseBookmarkRepository = {
   list: (signal: AbortSignal) => Promise<string[]>;
-  save: (id: number, signal: AbortSignal) => Promise<void>;
-  remove: (id: number, signal: AbortSignal) => Promise<void>;
+  save: (target: BookmarkTarget, signal: AbortSignal) => Promise<void>;
+  remove: (target: BookmarkTarget, signal: AbortSignal) => Promise<void>;
   removeUnavailable: (key: string, signal: AbortSignal) => Promise<void>;
 };
 
 const pageSize = 500;
 
-function requireCourseKey(id: number) {
-  const key = courseContentKey(id);
-  if (!key) throw new Error("Invalid course ID");
+function requireContentKey(target: BookmarkTarget) {
+  const key =
+    typeof target === "number"
+      ? courseContentKey(target)
+      : isVideoContentKey(target)
+        ? target
+        : null;
+  if (!key) throw new Error("Invalid bookmark target");
   return key;
 }
 
@@ -23,7 +30,7 @@ export function courseBookmarkRepository(
   const table = () => client.from("bookmarks");
   const matchingRow = (key: string) =>
     table().select("content_key").eq("user_id", userId).eq("content_key", key);
-  async function removeCourseKey(key: string, signal: AbortSignal) {
+  async function removeKey(key: string, signal: AbortSignal) {
     const { error } = await table()
       .delete()
       .eq("user_id", userId)
@@ -40,7 +47,6 @@ export function courseBookmarkRepository(
         const query = table()
           .select("content_key")
           .eq("user_id", userId)
-          .like("content_key", `${courseKeyPrefix}%`)
           .order("content_key")
           .limit(pageSize);
         if (cursor) query.gt("content_key", cursor);
@@ -51,8 +57,8 @@ export function courseBookmarkRepository(
         cursor = keys[keys.length - 1];
       }
     },
-    async save(id, signal) {
-      const key = requireCourseKey(id);
+    async save(target, signal) {
+      const key = requireContentKey(target);
       const { error } = await table()
         .insert({ user_id: userId, content_key: key })
         .abortSignal(signal);
@@ -63,12 +69,12 @@ export function courseBookmarkRepository(
       }
       throw error;
     },
-    async remove(id, signal) {
-      await removeCourseKey(requireCourseKey(id), signal);
+    async remove(target, signal) {
+      await removeKey(requireContentKey(target), signal);
     },
     async removeUnavailable(key, signal) {
-      if (!key.startsWith(courseKeyPrefix)) throw new Error("Invalid course key");
-      await removeCourseKey(key, signal);
+      if (!bookmarkKind(key)) throw new Error("Invalid bookmark key");
+      await removeKey(key, signal);
     },
   };
 }

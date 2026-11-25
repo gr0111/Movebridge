@@ -1510,6 +1510,29 @@
 .video-title:hover {
   color: var(--accent);
 }
+.video-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.video-title-row .video-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.video-bookmark {
+  flex: none;
+}
+.video-bookmark .bookmark-button {
+  width: 44px;
+  height: 44px;
+}
+.video-modal-bookmark {
+  margin-top: 12px;
+}
+.video-card-body > .bookmark-error {
+  color: #972e43;
+}
 .video-card-body > p {
   font-size: 11px;
   color: var(--text-secondary);

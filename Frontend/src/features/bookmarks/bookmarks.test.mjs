@@ -27,7 +27,7 @@ test("unavailable deletion uses the exact saved course key and owner", async () 
   const client = mockClient([{ error: null }]);
   const bookmarks = courseBookmarkRepository(client, "member-a");
   await bookmarks.removeUnavailable(key, signal);
-  await assert.rejects(bookmarks.removeUnavailable("video:institution:123", signal));
+  await assert.rejects(bookmarks.removeUnavailable("other:institution:123", signal));
   assert.deepEqual(client.calls[0].slice(0, 4), [
     ["from", "bookmarks"],
     ["delete"],
@@ -153,12 +153,6 @@ test("repository reads the owner's course rows and continues from the last key",
   for (const call of client.calls) {
     assert.ok(
       call.some(([method, column, id]) => method === "eq" && column === "user_id" && id === "a"),
-    );
-    assert.ok(
-      call.some(
-        ([method, column, prefix]) =>
-          method === "like" && column === "content_key" && prefix === "course:institution:%",
-      ),
     );
   }
   assert.deepEqual(

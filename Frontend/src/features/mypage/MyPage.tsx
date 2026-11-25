@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { days } from "../../data/search";
-import type { Course } from "../../data/search";
+import type { Course, Video } from "../../data/search";
+import { bookmarkKind } from "../bookmarks/content-key";
 import type { useBookmarks } from "../bookmarks/useBookmarks";
 import { weeklyPreview } from "./mypage-view";
 import { defaultDisplayName, joinedOn, validateDisplayName } from "./profile";
@@ -14,8 +15,10 @@ type Props = {
   user: User;
   bookmarks: ReturnType<typeof useBookmarks>;
   courses: readonly Course[];
+  videos: readonly Video[];
   formatTime: (time: number) => string;
   renderCourse: (course: Course) => ReactNode;
+  renderVideo: (video: Video, index: number) => ReactNode;
   openCourse: (course: Course) => void;
   navigate: (page: "home" | "schedule") => void;
   openAccount: () => void;
@@ -37,8 +40,10 @@ export default function MyPage({
   user,
   bookmarks,
   courses,
+  videos,
   formatTime,
   renderCourse,
+  renderVideo,
   openCourse,
   navigate,
   openAccount,
@@ -223,19 +228,34 @@ export default function MyPage({
             )}
           </section>
 
-          {bookmarks.unavailableCount > 0 && (
+          <section aria-labelledby="saved-videos-title">
+            <div className="mypage-section-heading">
+              <h2 id="saved-videos-title">저장한 온라인 영상 {videos.length}개</h2>
+            </div>
+            {videos.length ? (
+              <div className="video-grid">{videos.map(renderVideo)}</div>
+            ) : (
+              <div className="mypage-panel">
+                <p>아직 저장한 온라인 영상이 없어요.</p>
+              </div>
+            )}
+          </section>
+
+          {bookmarks.unavailable.size > 0 && (
             <section className="mypage-panel" aria-labelledby="unavailable-title">
-              <h2 id="unavailable-title">연결되지 않는 북마크 {bookmarks.unavailableCount}건</h2>
+              <h2 id="unavailable-title">연결되지 않는 북마크 {bookmarks.unavailable.size}건</h2>
               <p>
-                현재 강좌 데이터와 연결할 수 없는 항목입니다. 저장 키를 확인하고 필요할 때 삭제할 수
-                있어요.
+                현재 강좌 또는 영상 데이터와 연결할 수 없는 항목입니다. 저장 키를 확인하고 필요할 때
+                삭제할 수 있어요.
               </p>
               <ul className="mypage-unavailable">
                 {[...bookmarks.unavailable].map((key) => {
                   const pending = bookmarks.pending.has(key);
                   return (
                     <li key={key}>
-                      <code>{key}</code>
+                      <span>
+                        {bookmarkKind(key) === "video" ? "영상" : "강좌"} · <code>{key}</code>
+                      </span>
                       {confirming === key ? (
                         <div className="mypage-confirm">
                           <p>이 북마크를 삭제할까요?</p>

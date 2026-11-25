@@ -1,11 +1,13 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "../../auth/AuthProvider";
-import { courses } from "../../data/search";
+import { courses, onlineVideos } from "../../data/search";
 import { courseBookmarkRepository } from "./bookmark-repository";
 import { createBookmarkStore } from "./bookmark-store";
+import { bookmarkKind, videoContentKey } from "./content-key";
 
 const knownCourseIds = new Set(courses.map((course) => course.id));
+const knownVideoKeys = new Set(onlineVideos.map(videoContentKey).filter((key) => key !== null));
 
 function bookmarkScope(owner: string | null, client: SupabaseClient | null) {
   return {
@@ -14,6 +16,7 @@ function bookmarkScope(owner: string | null, client: SupabaseClient | null) {
       owner,
       knownCourseIds,
       owner && client ? courseBookmarkRepository(client, owner) : null,
+      knownVideoKeys,
     ),
   };
 }
@@ -33,7 +36,8 @@ export function useBookmarks() {
   useEffect(store.start, [store]);
   return {
     ...snapshot,
-    unavailableCount: snapshot.unavailable.size,
+    unavailableCount: [...snapshot.unavailable].filter((key) => bookmarkKind(key) === "course")
+      .length,
     owner,
     loading: pending || snapshot.status === "loading",
     ready: !pending && snapshot.status === "ready",
