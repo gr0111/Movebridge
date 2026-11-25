@@ -1,0 +1,12 @@
+{
+  "description": "무브릿(MOVEBRIDGE) — 운동의 시작, 나에게 맞는 방향으로. 관심 분야와 운동 경험, 시간과 예산으로 공공체육 강좌와 온라인 콘텐츠를 탐색하세요.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  },
+  "title": "무브릿 MOVEBRIDGE — 운동 탐색 서비스",
+  "language": "ko"
+}
