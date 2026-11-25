@@ -30,9 +30,8 @@ import {
 import { COURSE_PAGE_SIZE, COURSE_LOAD_MORE_SIZE } from "./data/course-pagination";
 import { externalVideos } from "./data/external-videos";
 import type { Course, Video } from "./data/search";
-import { useAuth } from "./auth/AuthProvider";
-import { savedForAccount } from "./auth/auth-flow";
 import AuthControls from "./components/auth/AuthControls";
+import { useBookmarks } from "./features/bookmarks/useBookmarks";
 
 function Brand({ small = false }: { small?: boolean }) {
   return (
@@ -263,16 +262,13 @@ const publicDataSources: PublicDataSource[] = [
 ];
 
 function App() {
-  const { session } = useAuth();
-  const owner = session?.user.id ?? null;
+  const bookmarks = useBookmarks();
+  const saved = bookmarks.ids;
+  const toggleSaved = bookmarks.toggle;
   const [page, setPage] = useState<Page>("home");
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [applied, setApplied] = useState<Filters>(initialFilters);
   const [searched, setSearched] = useState(false);
-  const [bookmarks, setBookmarks] = useState<{ owner: string | null; ids: number[] }>({ owner, ids: [] });
-  const currentBookmarks = savedForAccount(bookmarks, owner);
-  if (currentBookmarks !== bookmarks) setBookmarks(currentBookmarks);
-  const saved = currentBookmarks.ids;
   const [detail, setDetail] = useState<Course | null>(null);
   const [videoDetail, setVideoDetail] = useState<Video | null>(null);
   const [courseLimit, setCourseLimit] = useState(COURSE_PAGE_SIZE);
@@ -287,11 +283,6 @@ function App() {
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const toggleSaved = (id: number) =>
-    setBookmarks((previous) => {
-      const { ids } = savedForAccount(previous, owner);
-      return { owner, ids: ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id] };
-    });
   const update = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((prev) => updateDiscoveryFilter(prev, key, value));
     setCourseLimit(COURSE_PAGE_SIZE);
@@ -317,7 +308,7 @@ function App() {
       80,
     );
   };
-  const selectedCourses = courses.filter((c) => saved.includes(c.id));
+  const selectedCourses = courses.filter((c) => saved.has(c.id));
 
   return (
     <div className="app">
@@ -341,8 +332,8 @@ function App() {
                 onClick={() => navigate(key)}
               >
                 {label}
-                {key === "schedule" && saved.length > 0 && (
-                  <span className="nav-count">{saved.length}</span>
+                {key === "schedule" && bookmarks.ready && saved.size > 0 && (
+                  <span className="nav-count">{saved.size}</span>
                 )}
               </button>
             ))}
@@ -656,6 +647,7 @@ function App() {
                     </button>
                   </div>
                 )}
+                <BookmarkStatus bookmarks={bookmarks} guestNote />
                 <DiscoveryResults
                   results={discoveryResults}
                   filters={applied}
@@ -680,7 +672,9 @@ function App() {
                       key={course.id}
                       course={course}
                       showBeginner={showBeginner}
-                      saved={saved.includes(course.id)}
+                      saved={bookmarks.ready ? saved.has(course.id) : undefined}
+                      saving={bookmarks.pending.has(course.id)}
+                      saveError={bookmarks.errors.get(course.id)}
                       onSave={() => toggleSaved(course.id)}
                       onDetail={() => setDetail(course)}
                     />
@@ -738,8 +732,14 @@ function App() {
                   나의 일주일 <span className="sample-tag">첨부 샘플 · 참고용</span>
                 </h2>
                 <p>
-                  담은 강좌 {selectedCourses.length}개 · 새로고침하거나 브라우저를 닫으면
-                  초기화돼요.
+                  {bookmarks.ready && (
+                    <>
+                      담은 강좌 {selectedCourses.length}개 ·{" "}
+                      {bookmarks.owner
+                        ? "계정에 저장돼요."
+                        : "비회원은 임시로 담을 수 있어요. 새로고침하거나 브라우저를 닫으면 초기화돼요."}
+                    </>
+                  )}
                 </p>
               </div>
               <button className="secondary-button" onClick={() => navigate("home")}>
@@ -747,6 +747,12 @@ function App() {
                 운동 더 찾아보기
               </button>
             </div>
+            <BookmarkStatus bookmarks={bookmarks} />
+            {bookmarks.ready && bookmarks.unavailableCount > 0 && (
+              <p className="section-footnote" role="status">
+                현재 강좌 데이터와 연결되지 않는 북마크 {bookmarks.unavailableCount}건은 계정에 보관되어 있어요.
+              </p>
+            )}
             {selectedCourses.some((a, i) =>
               selectedCourses.some(
                 (b, j) =>
@@ -762,7 +768,7 @@ function App() {
                 주세요.
               </div>
             )}
-            <div className="timetable-wrapper">
+            <div className="timetable-wrapper" hidden={!bookmarks.ready}>
               <div className="timetable">
                 <div className="timetable-top">
                   <span>시간</span>
@@ -817,7 +823,7 @@ function App() {
                   ))}
                 </div>
               </div>
-              {!saved.length && (
+              {bookmarks.ready && !saved.size && (
                 <div className="schedule-empty">
                   <Icon name="calendar" size={32} />
                   <h3>아직 담은 강좌가 없어요.</h3>
@@ -841,10 +847,20 @@ function App() {
                         {c.parentheticalDays && " · 괄호 요일 확인 필요"}
                       </small>
                     </span>
-                    <button className="text-button" onClick={() => toggleSaved(c.id)}>
-                      시간표에서 빼기
-                      <Icon name="close" size={14} />
-                    </button>
+                    <span>
+                      <button
+                        className="text-button bookmark-action"
+                        disabled={!bookmarks.ready || bookmarks.pending.has(c.id)}
+                        aria-busy={bookmarks.pending.has(c.id)}
+                        onClick={() => toggleSaved(c.id)}
+                      >
+                        {bookmarks.pending.has(c.id) ? "해제 중…" : "시간표에서 빼기"}
+                        <Icon name="close" size={14} />
+                      </button>
+                      {bookmarks.errors.has(c.id) && (
+                        <small className="bookmark-error" role="alert">{bookmarks.errors.get(c.id)}</small>
+                      )}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1131,7 +1147,7 @@ function App() {
                 setVideoDetail(null);
               }
               if (e.key === "Tab") {
-                const items = e.currentTarget.querySelectorAll<HTMLElement>("button, a[href]");
+                const items = e.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled), a[href]");
                 const first = items[0];
                 const last = items[items.length - 1];
                 if (
@@ -1308,15 +1324,23 @@ function App() {
                       " 일부 종목·요일·시간은 추가 확인이 필요합니다. 추정하지 않은 원본 표현은 위 CSV 원본 강좌명과 원본 필드에서 확인해 주세요."}
                   </p>
                 </div>
+                <BookmarkStatus bookmarks={bookmarks} guestNote />
                 <button
-                  className="primary-button full-width"
+                  className="primary-button full-width bookmark-action"
+                  disabled={!bookmarks.ready || bookmarks.pending.has(detail.id)}
+                  aria-busy={bookmarks.pending.has(detail.id)}
                   onClick={() => toggleSaved(detail.id)}
                 >
-                  <Icon name={saved.includes(detail.id) ? "check" : "bookmark"} size={18} />
-                  {saved.includes(detail.id)
-                    ? "시간표에 담았어요 · 다시 눌러 해제"
-                    : "나의 참고 시간표에 담기"}
+                  <Icon name={saved.has(detail.id) ? "check" : "bookmark"} size={18} />
+                  {bookmarks.pending.has(detail.id)
+                    ? saved.has(detail.id) ? "해제 중…" : "저장 중…"
+                    : saved.has(detail.id)
+                      ? "시간표에 담았어요 · 다시 눌러 해제"
+                      : "나의 참고 시간표에 담기"}
                 </button>
+                {bookmarks.errors.has(detail.id) && (
+                  <p className="bookmark-error" role="alert">{bookmarks.errors.get(detail.id)}</p>
+                )}
               </>
             ) : videoDetail?.source === "youtube" ? (
               <>
@@ -1407,16 +1431,40 @@ function App() {
   );
 }
 
+function BookmarkStatus({
+  bookmarks, guestNote = false,
+}: {
+  bookmarks: ReturnType<typeof useBookmarks>;
+  guestNote?: boolean;
+}) {
+  if (bookmarks.loading)
+    return <p className="section-footnote" role="status">저장된 강좌를 불러오는 중이에요.</p>;
+  if (bookmarks.status === "error")
+    return (
+      <div className="section-footnote">
+        <p role="alert">저장된 강좌를 불러오지 못했어요.</p>
+        <button className="text-button" onClick={bookmarks.retry}>다시 불러오기</button>
+      </div>
+    );
+  if (guestNote && !bookmarks.owner)
+    return <p className="section-footnote">비회원 북마크는 이 탭을 새로고침하거나 닫기 전까지 유지돼요. 계정에 저장하려면 로그인해 주세요.</p>;
+  return null;
+}
+
 function CourseCard({
   course,
   showBeginner = false,
   saved,
+  saving,
+  saveError,
   onSave,
   onDetail,
 }: {
   course: Course;
   showBeginner?: boolean;
-  saved: boolean;
+  saved: boolean | undefined;
+  saving: boolean;
+  saveError?: string;
   onSave: () => void;
   onDetail: () => void;
 }) {
@@ -1446,14 +1494,17 @@ function CourseCard({
           {showBeginner && <BeginnerLabel title={course.title} />}
         </div>
         <button
-          className={`bookmark-button ${saved ? "is-saved" : ""}`}
+          className={`bookmark-button bookmark-action ${saved ? "is-saved" : ""}`}
           onClick={onSave}
-          aria-label={`${course.title} ${saved ? "관심 해제" : "관심 표시"}`}
+          disabled={saving || saved === undefined}
+          aria-busy={saving}
+          aria-label={`${course.title} ${saving ? "북마크 처리 중" : saved ? "관심 해제" : "관심 표시"}`}
           aria-pressed={saved}
         >
           <Icon name="bookmark" size={20} />
         </button>
       </div>
+      {saveError && <p className="bookmark-error" role="alert">{saveError}</p>}
       <div className="course-title-row">
         <span className="sport-pictogram-box">
           <SportPictogram icon={pictogramKey} size={32} />

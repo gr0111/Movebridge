@@ -1,12 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  authMessage,
-  authUrl,
-  passwordProblem,
-  readAuthCallback,
-  savedForAccount,
-} from "./auth-flow.ts";
+import { authMessage, authUrl, passwordProblem, readAuthCallback } from "./auth-flow.ts";
+import { createBookmarkStore } from "../features/bookmarks/bookmark-store.ts";
 
 test("signup and recovery callbacks accept a fragment token for their explicit flow", () => {
   assert.deepEqual(
@@ -55,13 +50,20 @@ test("auth errors use safe copy and login distinguishes unconfirmed email", () =
   assert.equal(authMessage({ code: "unknown" }, "retry"), "retry");
 });
 
-test("switching between accounts or to guest clears memory bookmarks", () => {
-  const previous = { owner: "member-a", ids: [1, 2] };
-  assert.equal(savedForAccount(previous, "member-a"), previous);
-  assert.deepEqual(savedForAccount(previous, "member-b"), { owner: "member-b", ids: [] });
-  assert.deepEqual(savedForAccount(previous, null), { owner: null, ids: [] });
-  assert.deepEqual(savedForAccount({ owner: null, ids: [5] }, "member-a"), {
-    owner: "member-a",
-    ids: [],
+test("switching between accounts or to guest starts with independent bookmark state", async () => {
+  const courses = new Set([1, 5]);
+  const guest = createBookmarkStore(null, courses, null);
+  await guest.toggle(5);
+  const member = createBookmarkStore("member-a", courses, {
+    list: async () => ["course:institution:1"],
   });
+  const stop = member.start();
+  await Promise.resolve();
+  assert.deepEqual([...member.getSnapshot().ids], [1]);
+  stop();
+  const secondMember = createBookmarkStore("member-b", courses, null);
+  const signedOut = createBookmarkStore(null, courses, null);
+  assert.equal(secondMember.getSnapshot().ids.size, 0);
+  assert.equal(signedOut.getSnapshot().ids.size, 0);
+  assert.deepEqual([...guest.getSnapshot().ids], [5]);
 });

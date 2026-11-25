@@ -386,7 +386,7 @@ export default function AuthControls() {
                   <>
                     <p>{session.user.email}</p>
                     <p className="auth-note">
-                      이용 중에 담은 강좌는 새로고침하거나 계정을 바꾸면 초기화됩니다.
+                      로그인한 상태에서 담은 강좌는 이 계정에 저장됩니다.
                     </p>
                     <button
                       type="button"

@@ -50,10 +50,3 @@ export function passwordProblem(password: string, confirmation: string) {
   if (password !== confirmation) return "두 비밀번호가 일치하지 않습니다.";
   return "";
 }
-
-export function savedForAccount(
-  previous: { owner: string | null; ids: number[] },
-  owner: string | null,
-) {
-  return previous.owner === owner ? previous : { owner, ids: [] };
-}
