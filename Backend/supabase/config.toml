@@ -1,0 +1,14 @@
+project_id = "movebridge-backend"
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = false
+
+[auth]
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enabled = true
