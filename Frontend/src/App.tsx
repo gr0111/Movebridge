@@ -30,6 +30,9 @@ import {
 import { COURSE_PAGE_SIZE, COURSE_LOAD_MORE_SIZE } from "./data/course-pagination";
 import { externalVideos } from "./data/external-videos";
 import type { Course, Video } from "./data/search";
+import { useAuth } from "./auth/AuthProvider";
+import { savedForAccount } from "./auth/auth-flow";
+import AuthControls from "./components/auth/AuthControls";
 
 function Brand({ small = false }: { small?: boolean }) {
   return (
@@ -260,11 +263,16 @@ const publicDataSources: PublicDataSource[] = [
 ];
 
 function App() {
+  const { session } = useAuth();
+  const owner = session?.user.id ?? null;
   const [page, setPage] = useState<Page>("home");
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [applied, setApplied] = useState<Filters>(initialFilters);
   const [searched, setSearched] = useState(false);
-  const [saved, setSaved] = useState<number[]>([]);
+  const [bookmarks, setBookmarks] = useState<{ owner: string | null; ids: number[] }>({ owner, ids: [] });
+  const currentBookmarks = savedForAccount(bookmarks, owner);
+  if (currentBookmarks !== bookmarks) setBookmarks(currentBookmarks);
+  const saved = currentBookmarks.ids;
   const [detail, setDetail] = useState<Course | null>(null);
   const [videoDetail, setVideoDetail] = useState<Video | null>(null);
   const [courseLimit, setCourseLimit] = useState(COURSE_PAGE_SIZE);
@@ -280,7 +288,10 @@ function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const toggleSaved = (id: number) =>
-    setSaved((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setBookmarks((previous) => {
+      const { ids } = savedForAccount(previous, owner);
+      return { owner, ids: ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id] };
+    });
   const update = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((prev) => updateDiscoveryFilter(prev, key, value));
     setCourseLimit(COURSE_PAGE_SIZE);
@@ -337,6 +348,7 @@ function App() {
             ))}
           </nav>
           <span className="header-caption">당신의 건강한 시작을 함께해요</span>
+          <AuthControls />
           <button
             className="mobile-menu icon-button"
             onClick={() => setMenuOpen(!menuOpen)}

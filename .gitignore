@@ -5,6 +5,7 @@ build/
 .env*
 *.env
 *.env.*
+!/Frontend/.env.example
 .npmrc
 .netrc
 .aws/

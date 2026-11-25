@@ -7,8 +7,19 @@ major_version = 17
 enabled = false
 
 [auth]
+site_url = "http://127.0.0.1:8443"
+additional_redirect_urls = ["http://127.0.0.1:8443/**", "http://localhost:8443/**"]
 enable_signup = true
 enable_anonymous_sign_ins = false
 
 [auth.email]
 enabled = true
+enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "무브릿 이메일 확인"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "무브릿 비밀번호 재설정"
+content_path = "./supabase/templates/recovery.html"
