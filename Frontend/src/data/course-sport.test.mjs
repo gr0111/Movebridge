@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { courses, videos, sampleCharts } from "./search.ts";
 import { resolveCourseSport, sportIconKeys } from "./course-sport.ts";
 import { getCourseDisplay } from "./course-display.ts";
-import { searchDiscovery, discoveryDistribution } from "./discovery.ts";
+import { searchDiscovery } from "./discovery.ts";
+import { discoveryDistribution } from "./public-data-analysis.ts";
 
 const actual = (title) => {
   const course = courses.find((course) => course.title === title);

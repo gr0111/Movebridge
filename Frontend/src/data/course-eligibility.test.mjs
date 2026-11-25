@@ -11,7 +11,8 @@ import {
   searchCourses,
   sampleCharts,
 } from "./search.ts";
-import { searchDiscovery, getDetailOptions, discoveryDistribution } from "./discovery.ts";
+import { searchDiscovery, getDetailOptions } from "./discovery.ts";
+import { discoveryDistribution } from "./public-data-analysis.ts";
 import { COURSE_PAGE_SIZE, visibleCourseRecords } from "./course-pagination.ts";
 
 const all = {
