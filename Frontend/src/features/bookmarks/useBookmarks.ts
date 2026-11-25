@@ -33,10 +33,12 @@ export function useBookmarks() {
   useEffect(store.start, [store]);
   return {
     ...snapshot,
+    unavailableCount: snapshot.unavailable.size,
     owner,
     loading: pending || snapshot.status === "loading",
     ready: !pending && snapshot.status === "ready",
     toggle: store.toggle,
     retry: store.retry,
+    removeUnavailable: store.removeUnavailable,
   };
 }

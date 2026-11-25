@@ -1,12 +1,14 @@
 import type { CourseBookmarkRepository } from "./bookmark-repository.ts";
 import { matchCourseBookmarks } from "./content-key.ts";
 
+type BookmarkTarget = number | string;
+
 type Snapshot = {
   ids: ReadonlySet<number>;
-  pending: ReadonlySet<number>;
-  errors: ReadonlyMap<number, string>;
+  pending: ReadonlySet<BookmarkTarget>;
+  errors: ReadonlyMap<BookmarkTarget, string>;
   status: "loading" | "error" | "ready";
-  unavailableCount: number;
+  unavailable: ReadonlySet<string>;
 };
 
 export function createBookmarkStore(
@@ -19,7 +21,7 @@ export function createBookmarkStore(
     pending: new Set(),
     errors: new Map(),
     status: owner ? "loading" : "ready",
-    unavailableCount: 0,
+    unavailable: new Set(),
   };
   const subscriptions = new Set<() => void>();
   let lifecycle: { controller: AbortController; reading: boolean } | null = null;
@@ -66,41 +68,66 @@ export function createBookmarkStore(
     update({ ids });
   }
 
-  async function toggle(id: number) {
-    if (!knownIds.has(id) || snapshot.status !== "ready" || snapshot.pending.has(id)) return;
-    const removing = snapshot.ids.has(id);
-    if (!owner) {
-      applyToggle(id, removing);
-      return;
-    }
+  async function mutate(
+    target: BookmarkTarget,
+    change: (signal: AbortSignal) => Promise<void>,
+    commit: () => void,
+    errorMessage: string,
+  ) {
     const request = lifecycle;
-    if (!repository || !request) return;
+    if (!request || snapshot.status !== "ready" || snapshot.pending.has(target)) return;
 
     const errors = new Map(snapshot.errors);
-    errors.delete(id);
-    update({ pending: new Set([...snapshot.pending, id]), errors });
+    errors.delete(target);
+    update({ pending: new Set([...snapshot.pending, target]), errors });
     try {
-      const change = removing ? repository.remove : repository.save;
-      await change(id, request.controller.signal);
-      if (request === lifecycle) applyToggle(id, removing);
+      await change(request.controller.signal);
+      if (request === lifecycle) commit();
     } catch {
       if (request === lifecycle) {
         const nextErrors = new Map(snapshot.errors);
-        nextErrors.set(
-          id,
-          removing
-            ? "관심 강좌를 해제하지 못했어요. 버튼을 다시 눌러 주세요."
-            : "관심 강좌를 저장하지 못했어요. 버튼을 다시 눌러 주세요.",
-        );
+        nextErrors.set(target, errorMessage);
         update({ errors: nextErrors });
       }
     } finally {
       if (request === lifecycle) {
         const pending = new Set(snapshot.pending);
-        pending.delete(id);
+        pending.delete(target);
         update({ pending });
       }
     }
+  }
+
+  async function toggle(id: number) {
+    if (!knownIds.has(id) || snapshot.status !== "ready") return;
+    const removing = snapshot.ids.has(id);
+    if (!owner) {
+      applyToggle(id, removing);
+      return;
+    }
+    if (!repository) return;
+    await mutate(
+      id,
+      (signal) => (removing ? repository.remove(id, signal) : repository.save(id, signal)),
+      () => applyToggle(id, removing),
+      removing
+        ? "관심 강좌를 해제하지 못했어요. 버튼을 다시 눌러 주세요."
+        : "관심 강좌를 저장하지 못했어요. 버튼을 다시 눌러 주세요.",
+    );
+  }
+
+  async function removeUnavailable(key: string) {
+    if (!owner || !repository || !snapshot.unavailable.has(key)) return;
+    await mutate(
+      key,
+      (signal) => repository.removeUnavailable(key, signal),
+      () => {
+        const unavailable = new Set(snapshot.unavailable);
+        unavailable.delete(key);
+        update({ unavailable });
+      },
+      "북마크를 삭제하지 못했어요. 다시 시도해 주세요.",
+    );
   }
 
   return {
@@ -115,5 +142,6 @@ export function createBookmarkStore(
       if (snapshot.status === "error") void load();
     },
     toggle,
+    removeUnavailable,
   };
 }

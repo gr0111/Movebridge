@@ -31,7 +31,10 @@ import { COURSE_PAGE_SIZE, COURSE_LOAD_MORE_SIZE } from "./data/course-paginatio
 import { externalVideos } from "./data/external-videos";
 import type { Course, Video } from "./data/search";
 import AuthControls from "./components/auth/AuthControls";
+import { useAuth } from "./auth/AuthProvider";
 import { useBookmarks } from "./features/bookmarks/useBookmarks";
+import MyPage from "./features/mypage/MyPage";
+import { myPageAccess, readMyPageLocation, withMyPageLocation } from "./features/mypage/mypage-view";
 
 function Brand({ small = false }: { small?: boolean }) {
   return (
@@ -190,7 +193,7 @@ function SportsIllustration() {
   );
 }
 
-type Page = "home" | "schedule" | "data" | "about";
+type Page = "home" | "schedule" | "data" | "about" | "mypage";
 const initialFilters: Filters = {
   field: "전체 분야",
   experience: "상관없음",
@@ -262,10 +265,14 @@ const publicDataSources: PublicDataSource[] = [
 ];
 
 function App() {
+  const auth = useAuth();
   const bookmarks = useBookmarks();
   const saved = bookmarks.ids;
   const toggleSaved = bookmarks.toggle;
-  const [page, setPage] = useState<Page>("home");
+  const [page, setPage] = useState<Page>(() =>
+    readMyPageLocation(new URL(window.location.href)) ? "mypage" : "home",
+  );
+  const [accountRequest, setAccountRequest] = useState(0);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [applied, setApplied] = useState<Filters>(initialFilters);
   const [searched, setSearched] = useState(false);
@@ -279,6 +286,10 @@ function App() {
   const resultsRef = useRef<HTMLElement>(null);
   const searchRef = useRef<HTMLFormElement>(null);
   const navigate = (next: Page) => {
+    const current = new URL(window.location.href);
+    if (next === "mypage" || readMyPageLocation(current)) {
+      window.history.replaceState(window.history.state, "", withMyPageLocation(current, next === "mypage"));
+    }
     setPage(next);
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -309,6 +320,20 @@ function App() {
     );
   };
   const selectedCourses = courses.filter((c) => saved.has(c.id));
+  const access = myPageAccess(auth.pending, auth.session?.user.id ?? null);
+  const openAccount = () => setAccountRequest((count) => count + 1);
+  const renderCourse = (course: Course, showBeginner = false) => (
+    <CourseCard
+      key={course.id}
+      course={course}
+      showBeginner={showBeginner}
+      saved={bookmarks.ready ? saved.has(course.id) : undefined}
+      saving={bookmarks.pending.has(course.id)}
+      saveError={bookmarks.errors.get(course.id)}
+      onSave={() => toggleSaved(course.id)}
+      onDetail={() => setDetail(course)}
+    />
+  );
 
   return (
     <div className="app">
@@ -339,7 +364,7 @@ function App() {
             ))}
           </nav>
           <span className="header-caption">당신의 건강한 시작을 함께해요</span>
-          <AuthControls />
+          <AuthControls request={accountRequest} onMyPage={() => navigate("mypage")} />
           <button
             className="mobile-menu icon-button"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -667,18 +692,7 @@ function App() {
                     setError("");
                     searchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
                   }}
-                  renderCourse={(course, showBeginner) => (
-                    <CourseCard
-                      key={course.id}
-                      course={course}
-                      showBeginner={showBeginner}
-                      saved={bookmarks.ready ? saved.has(course.id) : undefined}
-                      saving={bookmarks.pending.has(course.id)}
-                      saveError={bookmarks.errors.get(course.id)}
-                      onSave={() => toggleSaved(course.id)}
-                      onDetail={() => setDetail(course)}
-                    />
-                  )}
+                  renderCourse={renderCourse}
                   renderVideo={(video, index, showBeginner) => (
                     <VideoCard
                       key={video.id}
@@ -864,6 +878,33 @@ function App() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        )}
+
+        {page === "mypage" && (
+          <div className="container subpage">
+            <div className="page-heading"><h1>마이페이지</h1></div>
+            {access === "loading" ? (
+              <p role="status">로그인 상태를 확인하고 있어요.</p>
+            ) : access === "member" && auth.session && auth.client ? (
+              <MyPage
+                key={auth.session.user.id}
+                client={auth.client}
+                user={auth.session.user}
+                bookmarks={bookmarks}
+                courses={selectedCourses}
+                formatTime={time}
+                renderCourse={renderCourse}
+                openCourse={setDetail}
+                navigate={navigate}
+                openAccount={openAccount}
+              />
+            ) : (
+              <section className="mypage-panel" aria-label="마이페이지 로그인 안내">
+                <p>{auth.error || "마이페이지를 보려면 로그인해 주세요."}</p>
+                <button type="button" className="primary-button" onClick={openAccount}>로그인 열기</button>
+              </section>
             )}
           </div>
         )}

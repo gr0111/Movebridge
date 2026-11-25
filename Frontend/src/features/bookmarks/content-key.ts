@@ -20,5 +20,5 @@ export function matchCourseBookmarks(keys: readonly string[], knownIds: Readonly
     if (id !== null && knownIds.has(id)) ids.add(id);
     else unavailable.add(key);
   }
-  return { ids, unavailableCount: unavailable.size };
+  return { ids, unavailable };
 }

@@ -119,7 +119,7 @@ function AuthDialog({
   );
 }
 
-export default function AuthControls() {
+export default function AuthControls({ request, onMyPage }: { request: number; onMyPage: () => void }) {
   const { client, session, pending, error: startupError, callback } = useAuth();
   const recovery = callback?.action === "recovery";
   const [open, setOpen] = useState(Boolean(callback));
@@ -137,7 +137,17 @@ export default function AuthControls() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
+  const previousRequest = useRef(request);
   const screen = requestedScreen === "account" && !session ? "login" : requestedScreen;
+
+  useEffect(() => {
+    if (previousRequest.current === request) return;
+    previousRequest.current = request;
+    setScreen(session ? "account" : "login");
+    setError("");
+    setNotice("");
+    setOpen(true);
+  }, [request, session]);
 
   function switchTo(next: Screen, message = "") {
     setScreen(next);
@@ -388,6 +398,10 @@ export default function AuthControls() {
                     <p className="auth-note">
                       로그인한 상태에서 담은 강좌는 이 계정에 저장됩니다.
                     </p>
+                    <button type="button" className="primary-button" disabled={busy} onClick={() => {
+                      setOpen(false);
+                      onMyPage();
+                    }}>마이페이지</button>
                     <button
                       type="button"
                       className="secondary-button"

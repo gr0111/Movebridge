@@ -5,6 +5,7 @@ export type CourseBookmarkRepository = {
   list: (signal: AbortSignal) => Promise<string[]>;
   save: (id: number, signal: AbortSignal) => Promise<void>;
   remove: (id: number, signal: AbortSignal) => Promise<void>;
+  removeUnavailable: (key: string, signal: AbortSignal) => Promise<void>;
 };
 
 const pageSize = 500;
@@ -22,6 +23,14 @@ export function courseBookmarkRepository(
   const table = () => client.from("bookmarks");
   const matchingRow = (key: string) =>
     table().select("content_key").eq("user_id", userId).eq("content_key", key);
+  async function removeCourseKey(key: string, signal: AbortSignal) {
+    const { error } = await table()
+      .delete()
+      .eq("user_id", userId)
+      .eq("content_key", key)
+      .abortSignal(signal);
+    if (error) throw error;
+  }
 
   return {
     async list(signal) {
@@ -55,13 +64,11 @@ export function courseBookmarkRepository(
       throw error;
     },
     async remove(id, signal) {
-      const key = requireCourseKey(id);
-      const { error } = await table()
-        .delete()
-        .eq("user_id", userId)
-        .eq("content_key", key)
-        .abortSignal(signal);
-      if (error) throw error;
+      await removeCourseKey(requireCourseKey(id), signal);
+    },
+    async removeUnavailable(key, signal) {
+      if (!key.startsWith(courseKeyPrefix)) throw new Error("Invalid course key");
+      await removeCourseKey(key, signal);
     },
   };
 }

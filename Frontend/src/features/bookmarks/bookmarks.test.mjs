@@ -17,7 +17,57 @@ const repo = (overrides = {}) => ({
   list: async () => [],
   save: async () => {},
   remove: async () => {},
+  removeUnavailable: async () => {},
   ...overrides,
+});
+
+test("unavailable deletion uses the exact saved course key and owner", async () => {
+  const signal = new AbortController().signal;
+  const key = "course:institution:000123";
+  const client = mockClient([{ error: null }]);
+  const bookmarks = courseBookmarkRepository(client, "member-a");
+  await bookmarks.removeUnavailable(key, signal);
+  await assert.rejects(bookmarks.removeUnavailable("video:institution:123", signal));
+  assert.deepEqual(client.calls[0].slice(0, 4), [
+    ["from", "bookmarks"],
+    ["delete"],
+    ["eq", "user_id", "member-a"],
+    ["eq", "content_key", key],
+  ]);
+  assert.equal(client.calls.length, 1);
+});
+
+test("unavailable deletion keeps the item until success and preserves it on failure", async () => {
+  const key = "course:institution:999";
+  let calls = 0;
+  const retry = deferred();
+  const store = createBookmarkStore(
+    "member-a",
+    knownIds,
+    repo({
+      list: async () => [key, "course:institution:123"],
+      removeUnavailable: async () => {
+        if (++calls === 1) throw new Error("network");
+        return retry.promise;
+      },
+    }),
+  );
+  const stop = store.start();
+  await Promise.resolve();
+  await store.removeUnavailable("course:institution:123");
+  assert.equal(calls, 0);
+  await store.removeUnavailable(key);
+  assert.equal(store.getSnapshot().unavailable.has(key), true);
+  assert.match(store.getSnapshot().errors.get(key), /삭제하지/);
+  const removing = store.removeUnavailable(key);
+  await store.removeUnavailable(key);
+  assert.equal(calls, 2);
+  assert.equal(store.getSnapshot().unavailable.has(key), true);
+  retry.resolve();
+  await removing;
+  assert.equal(store.getSnapshot().unavailable.size, 0);
+  assert.deepEqual(savedIds(store), [123]);
+  stop();
 });
 
 function mockClient(responses) {
@@ -86,7 +136,7 @@ test("reconciliation deduplicates courses and counts unresolved course keys with
     knownIds,
   );
   assert.deepEqual([...result.ids], [123]);
-  assert.equal(result.unavailableCount, 2);
+  assert.equal(result.unavailable.size, 2);
 });
 
 test("repository reads the owner's course rows and continues from the last key", async () => {
