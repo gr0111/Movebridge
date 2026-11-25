@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Icon from "../../components/Icon";
 import { days } from "../../data/search";
@@ -28,6 +28,8 @@ type Props = {
   openCourse: (course: Course) => void;
   openAccount: () => void;
   findCourses: () => void;
+  requestCreate?: boolean;
+  onCreateOpened?: () => void;
 };
 
 export function PlannerStatus({ planner }: { planner: Planner }) {
@@ -51,11 +53,19 @@ export default function WeeklySchedule({
   openCourse,
   openAccount,
   findCourses,
+  requestCreate,
+  onCreateOpened,
 }: Props) {
   const [offset, setOffset] = useState(0);
   const [selection, setSelection] = useState<DialogSelection | null>(null);
   const [historyError, setHistoryError] = useState("");
   const addButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!requestCreate || planner.status !== "ready") return;
+    addButton.current?.focus();
+    setSelection({ id: crypto.randomUUID(), creating: true });
+    onCreateOpened?.();
+  }, [requestCreate, planner.status, onCreateOpened]);
   const dates = weekOf(addDays(koreaDate(), offset * 7));
   const historical = planner.completions
     .flatMap(({ plan_id, performed_on }) => {

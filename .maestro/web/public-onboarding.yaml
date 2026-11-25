@@ -1,0 +1,40 @@
+url: http://127.0.0.1:4175/
+name: Public workout roadmap
+---
+- launchApp
+- tapOn: '^나의 운동 첫걸음\s*$'
+- assertVisible: "관심 있는 운동을 골라 보세요"
+- tapOn:
+    id: "^roadmap-field$"
+- tapOn: "^유연성·스트레칭$"
+- tapOn: "^처음 시작$"
+- assertVisible: "^유연성·스트레칭 · 처음 시작$"
+- tapOn: "다음 단계 · 온라인 영상"
+- extendedWaitUntil:
+    visible: "온라인 영상 살펴보기"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: "^10분 초급 매트 전신 필라테스 홈트.*$"
+    direction: DOWN
+- assertVisible: "^10분 초급 매트 전신 필라테스 홈트.*$"
+- scrollUntilVisible:
+    element:
+      text: "다음 단계 · 오프라인 강좌"
+    direction: UP
+- tapOn: "다음 단계 · 오프라인 강좌"
+- assertVisible: "오프라인 스포츠센터 강좌 찾기"
+- scrollUntilVisible:
+    element:
+      text: '.*요가 \(06:00.*'
+    direction: DOWN
+- assertVisible: '.*요가 \(06:00.*'
+- scrollUntilVisible:
+    element:
+      text: "다음 단계 · 운동 계획"
+    direction: UP
+- tapOn: "다음 단계 · 운동 계획"
+- assertVisible: "나의 운동 계획 세우기"
+- tapOn: "^운동 시간표 보기$"
+- assertVisible: "^나의 운동 시간표$"
+- assertVisible: "^이전 주$"
