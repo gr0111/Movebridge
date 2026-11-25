@@ -8,12 +8,15 @@ import type { useBookmarks } from "../bookmarks/useBookmarks";
 import { weeklyPreview } from "./mypage-view";
 import { defaultDisplayName, joinedOn, validateDisplayName } from "./profile";
 import { useProfile } from "./useProfile";
+import WorkoutSummary from "../workout-planner/WorkoutSummary";
+import type { useWorkoutPlanner } from "../workout-planner/useWorkoutPlanner";
 import "./mypage.css";
 
 type Props = {
   client: SupabaseClient;
   user: User;
   bookmarks: ReturnType<typeof useBookmarks>;
+  planner: ReturnType<typeof useWorkoutPlanner>;
   courses: readonly Course[];
   videos: readonly Video[];
   formatTime: (time: number) => string;
@@ -39,6 +42,7 @@ export default function MyPage({
   client,
   user,
   bookmarks,
+  planner,
   courses,
   videos,
   formatTime,
@@ -154,6 +158,8 @@ export default function MyPage({
         )}
         {profileNotice && <p role="status">{profileNotice}</p>}
       </section>
+
+      <WorkoutSummary planner={planner} openSchedule={() => navigate("schedule")} />
 
       {bookmarks.loading && <p role="status">저장한 강좌를 불러오는 중이에요.</p>}
       {bookmarks.status === "error" && (
