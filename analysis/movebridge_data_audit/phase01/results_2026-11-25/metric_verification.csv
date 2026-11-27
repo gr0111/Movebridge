@@ -1,0 +1,32 @@
+﻿metric,previously_reported,computed,verification,difference,evidence
+강좌 원본 행,2137,2137,일치,0,file_inventory.csv
+강좌 원본 열,13,13,일치,0,file_inventory.csv
+2026년 수강월,400,400,일치,0,distribution_comparison.csv
+2026년 이전,1737,1737,일치,0,summary.json → matching
+전체 고유 강좌일련번호,1386,1386,일치,0,duplicate_analysis.csv
+2026년 고유 강좌일련번호,385,385,일치,0,duplicate_analysis.csv
+전체 고유 강좌일련+서브일련번호,2137,2137,일치,0,duplicate_analysis.csv
+전체 고유 강좌명,448,448,일치,0,duplicate_analysis.csv
+전체 완전 중복 제거 대상,0,0,일치,0,duplicate_analysis.csv
+전체 수강대상 결측,1891,1891,일치,0,missing_values.csv
+전체 수강대상 결측률(%),88.49,88.49,일치,0.0,missing_values.csv
+2026년 수강대상 결측,364,364,일치,0,missing_values.csv
+2026년 수강대상 결측률(%),91,91.0,일치,0.0,missing_values.csv
+종목 결측,1,1,일치,0,missing_values.csv
+수강금액 결측,1,1,일치,0,missing_values.csv
+전체 특수 종료일,1344,1344,일치,0,quality_issues.csv
+2026년 특수 종료일,380,380,일치,0,quality_issues.csv
+2026년 일반 종료일,20,20,일치,0,quality_issues.csv
+전체 제목 입문 표현(요청 규칙),96,96,일치,0,beginner_keyword_matches.csv
+2026년 제목 입문 표현(요청 규칙),29,29,일치,0,beginner_keyword_matches.csv
+기관 영상 기록,56,56,일치,0,video_audit.csv
+기관 고유 링크,56,56,일치,0,duplicate_analysis.csv
+기관 고유 제목,55,55,일치,0,duplicate_analysis.csv
+기관 완전 중복 제거 대상,0,0,일치,0,duplicate_analysis.csv
+기관 한글 입문 표현,0,0,일치,0,beginner_keyword_matches.csv
+기관 Beginner,1,1,일치,0,beginner_keyword_matches.csv
+외부 YouTube 영상,131,131,일치,0,video_audit.csv
+전체 서비스 영상,187,187,일치,0,summary.json → video
+일반 검색 대상,399,399,일치,0,search_exclusion_analysis.csv
+기존 기타 운동,348,348,일치,0,classification_comparison.csv
+전국공공시설개방,7333,7333,일치,0,file_inventory.csv

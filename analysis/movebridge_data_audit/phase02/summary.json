@@ -1,0 +1,1262 @@
+{
+  "beginner": {
+    "confirmed_search_sports": 19,
+    "course": {
+      "eligible_title_intro": null,
+      "records": 400,
+      "sample_level_counts": null,
+      "service_title_intro": 29,
+      "title_and_sample_intro": null,
+      "title_intro": 29
+    },
+    "external": {
+      "eligible_title_intro": 7,
+      "records": 131,
+      "sample_level_counts": {
+        "고급": 2,
+        "여러 수준 혼합": 7,
+        "입문·기초": 44,
+        "중급": 32,
+        "판단 보류": 46
+      },
+      "service_title_intro": 4,
+      "title_and_sample_intro": 2,
+      "title_intro": 7
+    },
+    "external_title_without_sample_intro": 5,
+    "institution": {
+      "eligible_title_intro": 0,
+      "records": 56,
+      "sample_level_counts": null,
+      "service_title_intro": 1,
+      "title_and_sample_intro": null,
+      "title_intro": 1
+    },
+    "searchable_course_rows": 399,
+    "searchable_course_title_intro": 29,
+    "sports_with_both": [],
+    "sports_with_course_title_intro": [
+      "라인댄스",
+      "로드사이클",
+      "탁구",
+      "당구"
+    ],
+    "sports_with_course_title_intro_but_no_exact_sample_intro": [
+      "라인댄스",
+      "로드사이클",
+      "탁구",
+      "당구"
+    ],
+    "sports_with_exact_external_sample_intro": [
+      "요가",
+      "필라테스"
+    ],
+    "sports_without_intro_evidence_even_at_field_level": [
+      "배드민턴",
+      "테니스",
+      "농구",
+      "검도",
+      "골프",
+      "실내승마"
+    ]
+  },
+  "coverage": {
+    "confirmed_search_fields": 10,
+    "confirmed_search_records": 394,
+    "confirmed_search_sports": 19,
+    "external_gap_fill_pct": 12.5,
+    "inferred_search_records": 2,
+    "inferred_sport_coverage": [
+      {
+        "exact_videos": 0,
+        "inferred_courses": 2,
+        "sport": "배드민턴"
+      }
+    ],
+    "institution_fields_before": [
+      "유연성·스트레칭",
+      "근력·체력 향상",
+      "리듬·댄스",
+      "유산소·러닝·사이클"
+    ],
+    "institution_or_external_fields_after": [
+      "유연성·스트레칭",
+      "근력·체력 향상",
+      "리듬·댄스",
+      "유산소·러닝·사이클"
+    ],
+    "literal_exact_after": 4,
+    "literal_exact_before": 3,
+    "newly_covered_fields": [],
+    "newly_covered_sports": [
+      {
+        "field": "유연성·스트레칭",
+        "sport": "요가"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "줌바댄스"
+      }
+    ],
+    "no_match_before": [
+      {
+        "field": "라켓 스포츠",
+        "sport": "배드민턴"
+      },
+      {
+        "field": "라켓 스포츠",
+        "sport": "탁구"
+      },
+      {
+        "field": "라켓 스포츠",
+        "sport": "테니스"
+      },
+      {
+        "field": "구기 스포츠",
+        "sport": "농구"
+      },
+      {
+        "field": "무도·격투 스포츠",
+        "sport": "검도"
+      },
+      {
+        "field": "골프",
+        "sport": "골프"
+      },
+      {
+        "field": "당구",
+        "sport": "당구"
+      },
+      {
+        "field": "승마",
+        "sport": "실내승마"
+      }
+    ],
+    "no_positive_video_path_after": [
+      {
+        "field": "라켓 스포츠",
+        "sport": "배드민턴"
+      },
+      {
+        "field": "라켓 스포츠",
+        "sport": "탁구"
+      },
+      {
+        "field": "라켓 스포츠",
+        "sport": "테니스"
+      },
+      {
+        "field": "구기 스포츠",
+        "sport": "농구"
+      },
+      {
+        "field": "무도·격투 스포츠",
+        "sport": "검도"
+      },
+      {
+        "field": "골프",
+        "sport": "골프"
+      },
+      {
+        "field": "당구",
+        "sport": "당구"
+      },
+      {
+        "field": "승마",
+        "sport": "실내승마"
+      }
+    ],
+    "no_positive_video_path_after_course_records": 348,
+    "previously_uncovered_sports": 16,
+    "related_field_only_after": [
+      {
+        "field": "유연성·스트레칭",
+        "sport": "SNPE"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "댄스로빅"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "댄스스포츠"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "라틴"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "모던"
+      },
+      {
+        "field": "유산소·러닝·사이클",
+        "sport": "로드사이클"
+      }
+    ],
+    "related_field_only_after_course_records": 28,
+    "related_field_only_before": [
+      {
+        "field": "유연성·스트레칭",
+        "sport": "SNPE"
+      },
+      {
+        "field": "유연성·스트레칭",
+        "sport": "요가"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "댄스로빅"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "댄스스포츠"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "라틴"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "모던"
+      },
+      {
+        "field": "리듬·댄스",
+        "sport": "줌바댄스"
+      },
+      {
+        "field": "유산소·러닝·사이클",
+        "sport": "로드사이클"
+      }
+    ],
+    "sport_exact_after": {
+      "count": 5,
+      "course_records": 18,
+      "pct": 26.3158,
+      "sports": [
+        {
+          "field": "유연성·스트레칭",
+          "sport": "요가"
+        },
+        {
+          "field": "유연성·스트레칭",
+          "sport": "필라테스"
+        },
+        {
+          "field": "근력·체력 향상",
+          "sport": "헬스"
+        },
+        {
+          "field": "리듬·댄스",
+          "sport": "라인댄스"
+        },
+        {
+          "field": "리듬·댄스",
+          "sport": "줌바댄스"
+        }
+      ]
+    },
+    "sport_exact_before": {
+      "count": 3,
+      "course_records": 10,
+      "pct": 15.7895,
+      "sports": [
+        {
+          "field": "유연성·스트레칭",
+          "sport": "필라테스"
+        },
+        {
+          "field": "근력·체력 향상",
+          "sport": "헬스"
+        },
+        {
+          "field": "리듬·댄스",
+          "sport": "라인댄스"
+        }
+      ]
+    },
+    "unresolved_search_records": 3
+  },
+  "denominators": {
+    "all_videos": 187,
+    "external_videos": 131,
+    "institution_videos": 56,
+    "raw_courses": 2137,
+    "searchable_courses": 399,
+    "service_courses": 400
+  },
+  "environment": {
+    "analysis_as_of_kst": "2026-11-27",
+    "base_commit": "3a6316a20046f34d4cde847612dcc96d37735eb2",
+    "evidence_branch": "analysis/data-audit",
+    "input_sha256_unchanged": true,
+    "inputs": {
+      "Frontend/data/original/movebridge_youtube_verified.csv": "7b8ec78679ea94a9c9f92c0515f7926e717687e7a64ab8a28f76886bf116fe13",
+      "Frontend/data/original/sports_step_search_2026.csv": "e20c47dcf827d130157dc0e51a6953f026468b0937a89f929a458c335341cee5",
+      "Frontend/data/original/sports_step_videos.csv": "3f08d1a186dfc6f413d0dbe626e75eb6ce0bb295e9cb4b5b2a6ab3ed72976f5d",
+      "Frontend/data/original/한국체육산업개발주식회사_올림픽스포츠센터 강좌정보_20260601.csv": "1a08d0ca9a71aec87aae3f950432c8dffd2899c7d80107d543b75c9aec8550ee",
+      "Frontend/src/data/course-display.ts": "4d86b0646b6a252323c51b390a3f8a10c81afa063f774dcfab8db15be882ad83",
+      "Frontend/src/data/course-eligibility.ts": "9b66ad4ef020a8eacb028f440db1d42ad99d2b43aac0e2e011b79f1fc4775b4a",
+      "Frontend/src/data/course-sport.ts": "464bdcc6d059117622e8cdb9c223cead7184b22ae1cb1806456845fa95aab399",
+      "Frontend/src/data/discovery.ts": "944a6524e4217ed52da7a0d5a7819278f078bb84dc98f78b22ff4fb19bfd0690",
+      "Frontend/src/data/external-videos.ts": "5b004b2140eaf2ae86360012563ff3d2c4106d37526761186082c11ae9481065",
+      "Frontend/src/data/public-data-analysis.ts": "5a72b9edb95b762eed9fb44fb548040ae35fbdc618585f6e319fa2c3a3ad55ff",
+      "Frontend/src/data/sample-data.ts": "277198f4decce47d093fd0aebf5c37cee5d68e8989439e82f7bdf5697317f263",
+      "Frontend/src/data/search.ts": "447fe20be70b3fd3a925c03b2d7cdcea753af5037a48e73c69eef445d760013c",
+      "Frontend/src/features/onboarding/roadmap.ts": "fa5d9578dfe3e784c7a8b86b35fa5a003349b4139fa6d73f196a0d4af719e8d7",
+      "Frontend/src/features/workout-planner/planner-model.ts": "da7b6f44f49872230addd0ad642fb6d57d5a09e3721dfbb51a9d478cbc484e8e",
+      "analysis/movebridge_data_audit/phase01/results_2026-11-25/classification_comparison.csv": "bf953496d9bbd7a3706a09d1d9af66bc888f4269766ad42d31f3c71d5486055c",
+      "analysis/movebridge_data_audit/phase01/results_2026-11-25/quality_issues.csv": "9b9940cffbe915de0f445411e6fa785e0f25325ed8cb61684846ce40a4e6f5d7",
+      "analysis/movebridge_data_audit/phase01/results_2026-11-25/summary.json": "278098e1d0a30d78f6588b37ee0730992070d744d53bbefc755afcd9f8ab799c"
+    },
+    "node": "v22.19.0",
+    "python": "3.9.6"
+  },
+  "external_exact_aliases": {
+    "줌바": "줌바댄스"
+  },
+  "history": {
+    "cohorts": {
+      "2026": {
+        "confirmed_detail": {
+          "SNPE": 2,
+          "검도": 5,
+          "골프": 81,
+          "농구": 6,
+          "당구": 70,
+          "댄스로빅": 1,
+          "댄스스포츠": 1,
+          "라인댄스": 3,
+          "라틴": 6,
+          "로드사이클": 13,
+          "모던": 5,
+          "배드민턴": 12,
+          "실내승마": 17,
+          "요가": 6,
+          "줌바댄스": 2,
+          "탁구": 18,
+          "테니스": 139,
+          "필라테스": 5,
+          "헬스": 2
+        },
+        "denominator": 400,
+        "fields": {
+          "골프": 81,
+          "구기 스포츠": 6,
+          "근력·체력 향상": 2,
+          "당구": 70,
+          "라켓 스포츠": 171,
+          "리듬·댄스": 18,
+          "무도·격투 스포츠": 5,
+          "분류 확인 필요": 4,
+          "승마": 17,
+          "유산소·러닝·사이클": 13,
+          "유연성·스트레칭": 13
+        },
+        "inferred_detail": {
+          "배드민턴": 2
+        },
+        "raw_sports": {
+          "SNPE": 2,
+          "검도": 5,
+          "골프": 81,
+          "농구": 6,
+          "당구": 70,
+          "댄스로빅": 1,
+          "댄스스포츠": 12,
+          "라인댄스": 3,
+          "로드사이클": 13,
+          "바디 트레이닝": 1,
+          "바디슬림": 2,
+          "방학특강": 4,
+          "배드민턴": 7,
+          "배드민턴 단기속성": 5,
+          "실내승마교실": 16,
+          "요가": 6,
+          "종목 미기재 또는 미확정": 1,
+          "줌바댄스": 2,
+          "탁구": 12,
+          "탁구단기속성": 5,
+          "테니스": 139,
+          "필라테스": 5,
+          "헬스": 2
+        },
+        "statuses": {
+          "근거 확인": 394,
+          "분류 확인 필요": 4,
+          "추정": 2
+        },
+        "title_intro": 29
+      },
+      "before_2026": {
+        "confirmed_detail": {
+          "SNPE": 4,
+          "검도": 12,
+          "골프": 146,
+          "농구": 12,
+          "당구": 189,
+          "댄스로빅": 3,
+          "댄스스포츠": 3,
+          "라인댄스": 4,
+          "라틴": 15,
+          "로드사이클": 33,
+          "모던": 10,
+          "배드민턴": 38,
+          "사이클": 1,
+          "실내승마": 38,
+          "요가": 12,
+          "줌바댄스": 4,
+          "탁구": 66,
+          "테니스": 1053,
+          "필라테스": 10,
+          "헬스": 5
+        },
+        "denominator": 1737,
+        "fields": {
+          "골프": 146,
+          "구기 스포츠": 12,
+          "근력·체력 향상": 5,
+          "당구": 189,
+          "라켓 스포츠": 1159,
+          "리듬·댄스": 39,
+          "무도·격투 스포츠": 12,
+          "분류 확인 필요": 77,
+          "승마": 38,
+          "유산소·러닝·사이클": 34,
+          "유연성·스트레칭": 26
+        },
+        "inferred_detail": {
+          "배드민턴": 2
+        },
+        "raw_sports": {
+          "SNPE": 4,
+          "검도": 12,
+          "골프": 146,
+          "노르딕워킹": 2,
+          "농구": 12,
+          "다이어트체조반": 1,
+          "당구": 189,
+          "댄스로빅": 3,
+          "댄스스포츠": 28,
+          "라인댄스": 4,
+          "로드사이클": 30,
+          "모델워킹": 3,
+          "바디 트레이닝": 7,
+          "바디슬림": 6,
+          "방학특강": 18,
+          "배드민턴": 25,
+          "배드민턴 단기속성": 13,
+          "스포드론": 3,
+          "스피닝바이크": 8,
+          "실내승마교실": 38,
+          "실내축구": 18,
+          "실버건강교실": 1,
+          "실버라인댄스": 1,
+          "에어로빅": 1,
+          "오카리나": 1,
+          "올팍워킹(파워)": 4,
+          "요가": 12,
+          "웰빙사교댄스": 1,
+          "웰빙워킹": 5,
+          "인라인롤러": 4,
+          "줌바댄스": 4,
+          "탁구": 41,
+          "탁구단기속성": 20,
+          "테니스": 1053,
+          "필라테스": 10,
+          "헬로우워킹": 2,
+          "헬스": 5,
+          "헬스PT": 2
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 57,
+          "근거 확인": 1658,
+          "분류 확인 필요": 20,
+          "추정": 2
+        },
+        "title_intro": 67
+      },
+      "full": {
+        "confirmed_detail": {
+          "SNPE": 6,
+          "검도": 17,
+          "골프": 227,
+          "농구": 18,
+          "당구": 259,
+          "댄스로빅": 4,
+          "댄스스포츠": 4,
+          "라인댄스": 7,
+          "라틴": 21,
+          "로드사이클": 46,
+          "모던": 15,
+          "배드민턴": 50,
+          "사이클": 1,
+          "실내승마": 55,
+          "요가": 18,
+          "줌바댄스": 6,
+          "탁구": 84,
+          "테니스": 1192,
+          "필라테스": 15,
+          "헬스": 7
+        },
+        "denominator": 2137,
+        "fields": {
+          "골프": 227,
+          "구기 스포츠": 18,
+          "근력·체력 향상": 7,
+          "당구": 259,
+          "라켓 스포츠": 1330,
+          "리듬·댄스": 57,
+          "무도·격투 스포츠": 17,
+          "분류 확인 필요": 81,
+          "승마": 55,
+          "유산소·러닝·사이클": 47,
+          "유연성·스트레칭": 39
+        },
+        "inferred_detail": {
+          "배드민턴": 4
+        },
+        "raw_sports": {
+          "SNPE": 6,
+          "검도": 17,
+          "골프": 227,
+          "노르딕워킹": 2,
+          "농구": 18,
+          "다이어트체조반": 1,
+          "당구": 259,
+          "댄스로빅": 4,
+          "댄스스포츠": 40,
+          "라인댄스": 7,
+          "로드사이클": 43,
+          "모델워킹": 3,
+          "바디 트레이닝": 8,
+          "바디슬림": 8,
+          "방학특강": 22,
+          "배드민턴": 32,
+          "배드민턴 단기속성": 18,
+          "스포드론": 3,
+          "스피닝바이크": 8,
+          "실내승마교실": 54,
+          "실내축구": 18,
+          "실버건강교실": 1,
+          "실버라인댄스": 1,
+          "에어로빅": 1,
+          "오카리나": 1,
+          "올팍워킹(파워)": 4,
+          "요가": 18,
+          "웰빙사교댄스": 1,
+          "웰빙워킹": 5,
+          "인라인롤러": 4,
+          "종목 미기재 또는 미확정": 1,
+          "줌바댄스": 6,
+          "탁구": 53,
+          "탁구단기속성": 25,
+          "테니스": 1192,
+          "필라테스": 15,
+          "헬로우워킹": 2,
+          "헬스": 7,
+          "헬스PT": 2
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 57,
+          "근거 확인": 2052,
+          "분류 확인 필요": 24,
+          "추정": 4
+        },
+        "title_intro": 96
+      }
+    },
+    "composition": {
+      "골프": {
+        "full_count": 227,
+        "full_pct": 10.6224,
+        "recent_count": 81,
+        "recent_less_full_pp": 9.6276,
+        "recent_pct": 20.25
+      },
+      "구기 스포츠": {
+        "full_count": 18,
+        "full_pct": 0.8423,
+        "recent_count": 6,
+        "recent_less_full_pp": 0.6577,
+        "recent_pct": 1.5
+      },
+      "근력·체력 향상": {
+        "full_count": 7,
+        "full_pct": 0.3276,
+        "recent_count": 2,
+        "recent_less_full_pp": 0.1724,
+        "recent_pct": 0.5
+      },
+      "당구": {
+        "full_count": 259,
+        "full_pct": 12.1198,
+        "recent_count": 70,
+        "recent_less_full_pp": 5.3802,
+        "recent_pct": 17.5
+      },
+      "라켓 스포츠": {
+        "full_count": 1330,
+        "full_pct": 62.2368,
+        "recent_count": 171,
+        "recent_less_full_pp": -19.4868,
+        "recent_pct": 42.75
+      },
+      "리듬·댄스": {
+        "full_count": 57,
+        "full_pct": 2.6673,
+        "recent_count": 18,
+        "recent_less_full_pp": 1.8327,
+        "recent_pct": 4.5
+      },
+      "무도·격투 스포츠": {
+        "full_count": 17,
+        "full_pct": 0.7955,
+        "recent_count": 5,
+        "recent_less_full_pp": 0.4545,
+        "recent_pct": 1.25
+      },
+      "분류 확인 필요": {
+        "full_count": 81,
+        "full_pct": 3.7904,
+        "recent_count": 4,
+        "recent_less_full_pp": -2.7904,
+        "recent_pct": 1.0
+      },
+      "승마": {
+        "full_count": 55,
+        "full_pct": 2.5737,
+        "recent_count": 17,
+        "recent_less_full_pp": 1.6763,
+        "recent_pct": 4.25
+      },
+      "유산소·러닝·사이클": {
+        "full_count": 47,
+        "full_pct": 2.1993,
+        "recent_count": 13,
+        "recent_less_full_pp": 1.0507,
+        "recent_pct": 3.25
+      },
+      "유연성·스트레칭": {
+        "full_count": 39,
+        "full_pct": 1.825,
+        "recent_count": 13,
+        "recent_less_full_pp": 1.425,
+        "recent_pct": 3.25
+      }
+    },
+    "historical_novel_labels": {
+      "노르딕워킹": {
+        "records": 2,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 2
+        }
+      },
+      "다이어트체조반": {
+        "records": 1,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 1
+        }
+      },
+      "모델워킹": {
+        "records": 3,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 3
+        }
+      },
+      "스포드론": {
+        "records": 3,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 3
+        }
+      },
+      "스피닝바이크": {
+        "records": 8,
+        "rule_candidates": {
+          "유산소·러닝·사이클 / 스피닝": 8
+        }
+      },
+      "실내축구": {
+        "records": 18,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 18
+        }
+      },
+      "실버건강교실": {
+        "records": 1,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 1
+        }
+      },
+      "실버라인댄스": {
+        "records": 1,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 1
+        }
+      },
+      "에어로빅": {
+        "records": 1,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 1
+        }
+      },
+      "오카리나": {
+        "records": 1,
+        "rule_candidates": {
+          "수영·수중운동 / 수영": 1
+        }
+      },
+      "올팍워킹(파워)": {
+        "records": 4,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 4
+        }
+      },
+      "웰빙사교댄스": {
+        "records": 1,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 1
+        }
+      },
+      "웰빙워킹": {
+        "records": 5,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 5
+        }
+      },
+      "인라인롤러": {
+        "records": 4,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 4
+        }
+      },
+      "헬로우워킹": {
+        "records": 2,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 2
+        }
+      },
+      "헬스PT": {
+        "records": 2,
+        "rule_candidates": {
+          "분류 확인 필요 / 세부 없음": 2
+        }
+      }
+    },
+    "historical_novel_records": 57,
+    "yearly": {
+      "1990": {
+        "confirmed_detail": {},
+        "denominator": 24,
+        "fields": {
+          "분류 확인 필요": 24
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "다이어트체조반": 1,
+          "실내축구": 11,
+          "실버건강교실": 1,
+          "실버라인댄스": 1,
+          "오카리나": 1,
+          "올팍워킹(파워)": 4,
+          "웰빙사교댄스": 1,
+          "인라인롤러": 4
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 24
+        }
+      },
+      "2013": {
+        "confirmed_detail": {},
+        "denominator": 1,
+        "fields": {
+          "분류 확인 필요": 1
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "실내축구": 1
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 1
+        }
+      },
+      "2014": {
+        "confirmed_detail": {},
+        "denominator": 8,
+        "fields": {
+          "분류 확인 필요": 8
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "스피닝바이크": 6,
+          "실내축구": 2
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 8
+        }
+      },
+      "2015": {
+        "confirmed_detail": {},
+        "denominator": 3,
+        "fields": {
+          "분류 확인 필요": 3
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "실내축구": 3
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 3
+        }
+      },
+      "2016": {
+        "confirmed_detail": {},
+        "denominator": 8,
+        "fields": {
+          "분류 확인 필요": 8
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "스피닝바이크": 2,
+          "실내축구": 1,
+          "에어로빅": 1,
+          "웰빙워킹": 4
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 8
+        }
+      },
+      "2017": {
+        "confirmed_detail": {},
+        "denominator": 1,
+        "fields": {
+          "분류 확인 필요": 1
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "웰빙워킹": 1
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 1
+        }
+      },
+      "2018": {
+        "confirmed_detail": {},
+        "denominator": 2,
+        "fields": {
+          "분류 확인 필요": 2
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "헬로우워킹": 2
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 2
+        }
+      },
+      "2020": {
+        "confirmed_detail": {
+          "테니스": 4
+        },
+        "denominator": 7,
+        "fields": {
+          "라켓 스포츠": 4,
+          "분류 확인 필요": 3
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "스포드론": 3,
+          "테니스": 4
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 3,
+          "근거 확인": 4
+        }
+      },
+      "2022": {
+        "confirmed_detail": {
+          "테니스": 609
+        },
+        "denominator": 611,
+        "fields": {
+          "라켓 스포츠": 609,
+          "분류 확인 필요": 2
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "노르딕워킹": 2,
+          "테니스": 609
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 2,
+          "근거 확인": 609
+        }
+      },
+      "2023": {
+        "confirmed_detail": {
+          "테니스": 84
+        },
+        "denominator": 86,
+        "fields": {
+          "라켓 스포츠": 84,
+          "분류 확인 필요": 2
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "테니스": 84,
+          "헬스PT": 2
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 2,
+          "근거 확인": 84
+        }
+      },
+      "2024": {
+        "confirmed_detail": {
+          "SNPE": 2,
+          "검도": 5,
+          "골프": 73,
+          "농구": 6,
+          "당구": 70,
+          "댄스로빅": 2,
+          "댄스스포츠": 1,
+          "라인댄스": 2,
+          "라틴": 5,
+          "로드사이클": 16,
+          "모던": 5,
+          "배드민턴": 19,
+          "사이클": 1,
+          "실내승마": 22,
+          "요가": 6,
+          "줌바댄스": 2,
+          "탁구": 39,
+          "테니스": 216,
+          "필라테스": 5,
+          "헬스": 3
+        },
+        "denominator": 514,
+        "fields": {
+          "골프": 73,
+          "구기 스포츠": 6,
+          "근력·체력 향상": 3,
+          "당구": 70,
+          "라켓 스포츠": 274,
+          "리듬·댄스": 17,
+          "무도·격투 스포츠": 5,
+          "분류 확인 필요": 14,
+          "승마": 22,
+          "유산소·러닝·사이클": 17,
+          "유연성·스트레칭": 13
+        },
+        "inferred_detail": {},
+        "raw_sports": {
+          "SNPE": 2,
+          "검도": 5,
+          "골프": 73,
+          "농구": 6,
+          "당구": 70,
+          "댄스로빅": 2,
+          "댄스스포츠": 11,
+          "라인댄스": 2,
+          "로드사이클": 15,
+          "모델워킹": 2,
+          "바디 트레이닝": 4,
+          "바디슬림": 2,
+          "방학특강": 11,
+          "배드민턴": 11,
+          "배드민턴 단기속성": 8,
+          "실내승마교실": 22,
+          "요가": 6,
+          "줌바댄스": 2,
+          "탁구": 23,
+          "탁구단기속성": 13,
+          "테니스": 216,
+          "필라테스": 5,
+          "헬스": 3
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 2,
+          "근거 확인": 500,
+          "분류 확인 필요": 12
+        }
+      },
+      "2025": {
+        "confirmed_detail": {
+          "SNPE": 2,
+          "검도": 7,
+          "골프": 73,
+          "농구": 6,
+          "당구": 119,
+          "댄스로빅": 1,
+          "댄스스포츠": 2,
+          "라인댄스": 2,
+          "라틴": 10,
+          "로드사이클": 17,
+          "모던": 5,
+          "배드민턴": 19,
+          "실내승마": 16,
+          "요가": 6,
+          "줌바댄스": 2,
+          "탁구": 27,
+          "테니스": 140,
+          "필라테스": 5,
+          "헬스": 2
+        },
+        "denominator": 472,
+        "fields": {
+          "골프": 73,
+          "구기 스포츠": 6,
+          "근력·체력 향상": 2,
+          "당구": 119,
+          "라켓 스포츠": 188,
+          "리듬·댄스": 22,
+          "무도·격투 스포츠": 7,
+          "분류 확인 필요": 9,
+          "승마": 16,
+          "유산소·러닝·사이클": 17,
+          "유연성·스트레칭": 13
+        },
+        "inferred_detail": {
+          "배드민턴": 2
+        },
+        "raw_sports": {
+          "SNPE": 2,
+          "검도": 7,
+          "골프": 73,
+          "농구": 6,
+          "당구": 119,
+          "댄스로빅": 1,
+          "댄스스포츠": 17,
+          "라인댄스": 2,
+          "로드사이클": 15,
+          "모델워킹": 1,
+          "바디 트레이닝": 3,
+          "바디슬림": 4,
+          "방학특강": 7,
+          "배드민턴": 14,
+          "배드민턴 단기속성": 5,
+          "실내승마교실": 16,
+          "요가": 6,
+          "줌바댄스": 2,
+          "탁구": 18,
+          "탁구단기속성": 7,
+          "테니스": 140,
+          "필라테스": 5,
+          "헬스": 2
+        },
+        "statuses": {
+          "과거 신규 원본 종목 검토": 1,
+          "근거 확인": 461,
+          "분류 확인 필요": 8,
+          "추정": 2
+        }
+      },
+      "2026": {
+        "confirmed_detail": {
+          "SNPE": 2,
+          "검도": 5,
+          "골프": 81,
+          "농구": 6,
+          "당구": 70,
+          "댄스로빅": 1,
+          "댄스스포츠": 1,
+          "라인댄스": 3,
+          "라틴": 6,
+          "로드사이클": 13,
+          "모던": 5,
+          "배드민턴": 12,
+          "실내승마": 17,
+          "요가": 6,
+          "줌바댄스": 2,
+          "탁구": 18,
+          "테니스": 139,
+          "필라테스": 5,
+          "헬스": 2
+        },
+        "denominator": 400,
+        "fields": {
+          "골프": 81,
+          "구기 스포츠": 6,
+          "근력·체력 향상": 2,
+          "당구": 70,
+          "라켓 스포츠": 171,
+          "리듬·댄스": 18,
+          "무도·격투 스포츠": 5,
+          "분류 확인 필요": 4,
+          "승마": 17,
+          "유산소·러닝·사이클": 13,
+          "유연성·스트레칭": 13
+        },
+        "inferred_detail": {
+          "배드민턴": 2
+        },
+        "raw_sports": {
+          "SNPE": 2,
+          "검도": 5,
+          "골프": 81,
+          "농구": 6,
+          "당구": 70,
+          "댄스로빅": 1,
+          "댄스스포츠": 12,
+          "라인댄스": 3,
+          "로드사이클": 13,
+          "바디 트레이닝": 1,
+          "바디슬림": 2,
+          "방학특강": 4,
+          "배드민턴": 7,
+          "배드민턴 단기속성": 5,
+          "실내승마교실": 16,
+          "요가": 6,
+          "종목 미기재 또는 미확정": 1,
+          "줌바댄스": 2,
+          "탁구": 12,
+          "탁구단기속성": 5,
+          "테니스": 139,
+          "필라테스": 5,
+          "헬스": 2
+        },
+        "statuses": {
+          "근거 확인": 394,
+          "분류 확인 필요": 4,
+          "추정": 2
+        }
+      }
+    }
+  },
+  "institution_excluded_from_exploration_ids": [
+    "319",
+    "304",
+    "291",
+    "290",
+    "256",
+    "254",
+    "246",
+    "240",
+    "237",
+    "235",
+    "232",
+    "228",
+    "225",
+    "222",
+    "221",
+    "219"
+  ],
+  "institution_exploration_candidates": 40,
+  "institution_status": {
+    "근거 확인": 43,
+    "분류 확인 필요": 7,
+    "운동 외 콘텐츠": 6
+  },
+  "method": {
+    "beginner": "제목 표현은 입문·처음·초급·기초·독립 단어 Beginner. 서비스 제목 규칙과 표본 추천운동경험 별도 저장.",
+    "beginner_gap": "직접 증거와 같은 분야의 입문 표현·외부 표본 평가가 모두 없는 세부 종목. 현재 운영과 개인 적합성 미확인.",
+    "coverage_denominator": "일반 검색 대상 중 근거가 확인된 강좌에 등장하는 고유 (분야,세부 종목) 또는 분야.",
+    "exact": "동일 상위 분야와 표준 세부 종목 동시 일치. 줌바→줌바댄스 한 건의 명칭 통합. 동일 과정 미판정.",
+    "historical_data_use": "공개 기록 단위. 운영 중인 프로그램 수, 신청 인원, 수요는 미확인.",
+    "historical_policy": "기존 분류 함수 직접 실행. 2026년에 없는 원본 종목 표기는 결과 보류 및 후보값 별도 저장.",
+    "known_counts": "근거 확인은 원본이나 메타데이터 토픽에 대한 분류 근거이며 기관 영상 실제 강습·시청을 재검증한 값은 아님.",
+    "related": "동일 상위 분야이며 세부 종목이 다르거나 비어 있는 영상. 정확 일치 개수에 중복 합산하지 않음.",
+    "video_scope": "기관 분포에는 56건 모두 포함. 탐색 지표는 분류 확인 필요·운동 외·행사/접수/홍보 후보 제외. 외부 검증본 131건 사용."
+  },
+  "service_observations": {
+    "current_operation_verified": null,
+    "paused_in_current_roadmap": 7,
+    "paused_original_records": 7,
+    "paused_rows": [
+      {
+        "강좌명": "실내승마교실 17:00 화목 - 일시중지",
+        "수강시간": "17:00-17:50",
+        "수강요일": "화,목",
+        "수강종료일": "9999-12-31",
+        "일련번호": "2007"
+      },
+      {
+        "강좌명": "실내승마교실 13:00 화목 - 일시중지",
+        "수강시간": "13:00-13:50",
+        "수강요일": "화,목",
+        "수강종료일": "9999-12-31",
+        "일련번호": "2019"
+      },
+      {
+        "강좌명": "실내승마교실 20:00 월수금 - 일시중지",
+        "수강시간": "20:00-20:50",
+        "수강요일": "월,수,금",
+        "수강종료일": "9999-12-31",
+        "일련번호": "2031"
+      },
+      {
+        "강좌명": "실내승마교실 16:00 월수금 - 일시중지",
+        "수강시간": "16:00-16:50",
+        "수강요일": "월,수,금",
+        "수강종료일": "9999-12-31",
+        "일련번호": "2040"
+      },
+      {
+        "강좌명": "실내승마교실 15:00 월수금 - 일시중지",
+        "수강시간": "15:00-15:50",
+        "수강요일": "월,수,금",
+        "수강종료일": "9999-12-31",
+        "일련번호": "2043"
+      },
+      {
+        "강좌명": "실내승마교실 14:00 월수금 - 일시중지",
+        "수강시간": "14:00-14:50",
+        "수강요일": "월,수,금",
+        "수강종료일": "9999-12-31",
+        "일련번호": "2046"
+      },
+      {
+        "강좌명": "실내승마교실 13:00 월수금 - 일시중지",
+        "수강시간": "13:00-13:50",
+        "수강요일": "월,수,금",
+        "수강종료일": "9999-12-31",
+        "일련번호": "2049"
+      }
+    ],
+    "paused_searchable_records": 7,
+    "paused_service_ids": [
+      "2007",
+      "2019",
+      "2031",
+      "2040",
+      "2043",
+      "2046",
+      "2049"
+    ],
+    "paused_weekly_entries_if_all_bookmarked": 19,
+    "phase1_title_time_review_ids": [
+      "102",
+      "103",
+      "104",
+      "134",
+      "135",
+      "136",
+      "138",
+      "139",
+      "140"
+    ],
+    "phase1_title_time_review_service_ids": [
+      "102",
+      "134",
+      "138"
+    ],
+    "runtime_title_time_review_service_ids": [
+      "102",
+      "134",
+      "138"
+    ],
+    "search_other_by_analysis_field": {
+      "골프": 81,
+      "구기 스포츠": 6,
+      "당구": 70,
+      "라켓 스포츠": 171,
+      "무도·격투 스포츠": 5,
+      "승마": 17
+    },
+    "search_other_records": 350,
+    "service_end_status": {
+      "일반 종료일 경과": 20,
+      "특수 종료일": 380
+    }
+  }
+}

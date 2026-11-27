@@ -1,0 +1,2 @@
+﻿id,title,original_sport,eligibility,resolution,reason,data_quality,code
+2137,자유이용,,False,unresolved,원본 종목이 미기재이고 강좌명에서도 실제 운동 종목을 확인할 수 없음,원본 종목 결측,"Frontend/src/data/course-eligibility.ts:4, Frontend/src/data/search.ts:42"
