@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { videoTitleIntroTerms } from "../../data/content-linkage.ts";
 import {
   initialRoadmap,
   moveRoadmap,
@@ -100,7 +101,7 @@ test("experience affects rank while preserving available content and title-analy
   assert.deepEqual(new Set(any.map(keyFor)), new Set(experienced.map(keyFor)));
   assert.ok(
     novice.every(
-      (row) => row.introductoryTitle === analyzeBeginnerTitle(row.record.title).hasBeginnerKeyword,
+      (row) => row.introductoryTitle === (videoTitleIntroTerms(row.record.title).length > 0),
     ),
   );
   assert.equal(analyzeBeginnerTitle("기초 체력과 기초대사량").hasBeginnerKeyword, false);

@@ -4,6 +4,8 @@ import Icon, { type IconName } from "./components/Icon";
 import DiscoveryResults from "./components/DiscoveryResults";
 import DiscoveryAnalysis from "./components/DiscoveryAnalysis";
 import DetailCombobox from "./components/DetailCombobox";
+import { videoTitleIntroTerms } from "./data/content-linkage";
+import { analyzedCourses, analyzedInstitutionVideos } from "./data/public-data-analysis";
 import {
   interestFields,
   experienceOptions,
@@ -344,7 +346,12 @@ function App() {
   const openAccount = () => setAccountRequest((count) => count + 1);
   const openSchedule = () => navigate("schedule");
   const videoDetailUrl = originalVideoLink(videoDetail?.url);
+  const videoIntroTerms = videoDetail ? videoTitleIntroTerms(videoDetail.title) : [];
+  const institutionDetail = videoDetail?.source === "institution"
+    ? analyzedInstitutionVideos.get(videoDetail.id)
+    : undefined;
   const detailDisplay = detail ? getCourseDisplay(detail) : null;
+  const detailClassification = detail ? analyzedCourses.get(detail.id) : null;
   const renderCourse = (course: Course, showBeginner = false) => (
     <CourseCard
       key={course.id}
@@ -357,12 +364,11 @@ function App() {
       onDetail={() => setDetail(course)}
     />
   );
-  const renderVideo = (video: Video, index: number, showBeginner = false) => (
+  const renderVideo = (video: Video, index: number) => (
     <VideoCard
       key={videoContentKey(video)}
       video={video}
       index={index}
-      showBeginner={showBeginner}
       onClick={() => setVideoDetail(video)}
       bookmark={<VideoBookmark video={video} bookmarks={bookmarks} />}
       bookmarkError={bookmarks.errors.get(videoContentKey(video) ?? "")}
@@ -609,9 +615,10 @@ function App() {
                         </label>
                         <select
                           id="budget"
-                          value={filters.budget}
+                          value={String(filters.budget)}
                           onChange={(e) => update("budget", +e.target.value)}
                         >
+                          <option value="Infinity">제한 없음</option>
                           {[50000, 70000, 100000, 150000, 200000, 500000].map((n) => (
                             <option key={n} value={n}>
                               {money(n)}원 이하
@@ -1074,7 +1081,7 @@ function App() {
                 {[
                   "종목명을 몰라도 관심 운동 분야부터 탐색",
                   "운동 경험 선택과 원본 제목의 입문 관련 표현 우선 안내",
-                  "같은 분야의 온라인 콘텐츠와 오프라인 강좌를 독립적으로 탐색",
+                  "같은 종목 영상과 같은 분야 대안 자료를 구분해 탐색",
                   "관심 강좌 북마크와 참고용 주간 운동 시간표",
                   "첨부 공공체육 콘텐츠의 분야별 제공 현황 시각화",
                 ].map((feature, index) => (
@@ -1092,9 +1099,11 @@ function App() {
             <details className="mapping-guide">
               <summary>관심 분야 분류와 입문 표현 판별 기준</summary>
               <p>
-                검색에서 강좌는 원본 종목과 강좌명을, 영상은 첨부 CSV의 관심분야를 사용합니다.
+                강좌는 원본 종목과 강좌명으로 분류합니다. 영상 연계는 기관 영상의 제목·분류 근거와
+                외부 영상 검증 CSV의 분야·세부 종목을 사용합니다.
                 ‘헬스등록필수’ 같은 이용 조건은 강좌의 종목 근거에서 제외합니다.
-                공공데이터 현황은 같은 강좌 근거에 세부 종목을 연결하고, 기관 영상의 접수 안내와 홍보 문구를 별도로 검토합니다.
+                줌바와 줌바댄스는 같은 종목으로, 로드사이클과 스피닝 및 헬스와 헬스장 루틴은
+                같은 분야로 연결합니다.
               </p>
               <dl>
                 {fieldRules.map((rule) => (
@@ -1106,7 +1115,9 @@ function App() {
               </dl>
               <p>
                 현재 샘플에는 설명 필드가 없어 원본 강좌명·영상 제목만 분석합니다.
-                입문·초급·기초·Beginner를 확인하되 기초체력·기초대사량·혼합 수준 표기는 제외합니다.
+                강좌의 입문 표현은 입문·초급·기초·Beginner를 확인하되 기초체력·기초대사량·혼합 수준
+                표기는 제외합니다. 영상은 입문·처음·초급·기초·Beginner의 제목 표기와 외부 영상의
+                표본 추천운동경험을 각각 보여 줍니다.
                 분류되지 않은 기록은 ‘기타 운동’으로 몰아넣지 않고 ‘분류 확인 필요’로 별도
                 집계합니다.
               </p>
@@ -1216,7 +1227,8 @@ function App() {
               <Icon name="close" />
             </button>
             <span className="sample-tag">
-              {videoDetail?.source === "youtube" ? "외부 YouTube" : "첨부 공공데이터 샘플 · 전체 자료 아님"}
+              {videoDetail?.source === "youtube" ? "외부 YouTube" : videoDetail
+                ? "공공기관 공개 영상" : "첨부 공공데이터 샘플 · 전체 자료 아님"}
             </span>
             {detail && detailDisplay ? (
               <div className="course-detail-heading">
@@ -1266,13 +1278,10 @@ function App() {
                   <div>
                     <dt>표시 종목 확인 근거</dt>
                     <dd>
-                      {detailDisplay.sportResolutionStatus === "inferred"
-                        ? `원본 명칭에 따른 종목 추정: ${detailDisplay.sportResolutionEvidence}`
-                        : detailDisplay.sportResolutionStatus === "title"
-                          ? "원본 강좌명에 명시된 종목·세부 명칭을 표시했습니다. 원본 종목 필드는 변경하지 않았습니다."
-                          : detailDisplay.sportResolutionStatus === "unresolved"
-                            ? "종목을 확정하지 않았습니다. 원본 표기를 유지하며 추가 확인이 필요합니다."
-                            : "원본 종목 필드를 기준으로 기본 종목명을 표시했습니다."}
+                      {detailClassification?.inferred ? "원본 명칭에 따른 종목 추정"
+                        : detailClassification?.sport ? `근거 확인 · ${detailClassification.field}`
+                          : "분류 확인 필요"}
+                      {detailClassification && ` · ${detailClassification.evidence}`}
                     </dd>
                   </div>
                   {detailDisplay.instructors.length > 0 && (
@@ -1422,6 +1431,7 @@ function App() {
                     ["채널", videoDetail.channel],
                     ["관심 운동 분야", videoDetail.sport],
                     ["세부 종목", videoDetail.discipline],
+                    ["제목에 입문 관련 표현", videoIntroTerms.join("·") || "표현 없음"],
                     ["표본 난이도", videoDetail.difficulty],
                     ["난이도 신뢰도", videoDetail.confidence],
                     ["추천 운동 경험 (표본 기준)", videoDetail.experience],
@@ -1455,7 +1465,15 @@ function App() {
                 <dl className="detail-list">
                   <div>
                     <dt>관심 운동 분야</dt>
-                    <dd>{videoDetail?.sport}</dd>
+                    <dd>{institutionDetail?.field}</dd>
+                  </div>
+                  <div>
+                    <dt>세부 종목</dt>
+                    <dd>{institutionDetail?.sport ?? "분류 확인 필요"}</dd>
+                  </div>
+                  <div>
+                    <dt>제목에 입문 관련 표현</dt>
+                    <dd>{videoIntroTerms.join("·") || "표현 없음"}</dd>
                   </div>
                   <div>
                     <dt>영상 등록일</dt>
@@ -1481,8 +1499,7 @@ function App() {
                 </dl>
                 <p className="modal-note">
                   첨부 CSV에 수록된 원본 정보입니다. 콘텐츠 유형은 1차 검토 상태이며 ‘미검토’는 강습
-                  확인 완료를 뜻하지 않습니다. 실제 열람 가능성과 영상 내용은 검증되지 않았고, 특정
-                  오프라인 강좌와 연결되지 않습니다.
+                  확인 완료를 뜻하지 않습니다. 공식 난이도 및 추천 운동 경험 정보는 제공되지 않았어요.
                 </p>
                 {videoDetailUrl && (
                   <a className="primary-button full-width" href={videoDetailUrl} target="_blank" rel="noreferrer">
@@ -1542,8 +1559,9 @@ function CourseCard({
   onSave: () => void;
   onDetail: () => void;
 }) {
-  const { displayTitle, displayTags, pictogramKey, sportResolutionStatus, additionalTypes, status } =
+  const { displayTitle, displayTags, pictogramKey, additionalTypes, status } =
     getCourseDisplay(course);
+  const classification = analyzedCourses.get(course.id);
   return (
     <article className="course-card">
       <div className="course-top">
@@ -1568,14 +1586,9 @@ function CourseCard({
           {additionalTypes.includes("방학특강") && (
             <span className="course-condition-tag">방학특강</span>
           )}
-          {sportResolutionStatus === "inferred" && (
-            <span
-              className="course-condition-tag"
-              title="원본 명칭에 따른 종목 추정이며 공식 약어 해석은 확인되지 않았습니다."
-            >
-              종목 추정
-            </span>
-          )}
+          <span className="course-condition-tag" title={classification?.evidence}>
+            {classification?.inferred ? "종목 추정" : classification?.sport ? "근거 확인" : "분류 확인 필요"}
+          </span>
           {showBeginner && <BeginnerLabel title={course.title} />}
         </div>
         <button
@@ -1746,18 +1759,17 @@ function VideoCard({
   video,
   index,
   onClick,
-  showBeginner = false,
   bookmark,
   bookmarkError,
 }: {
   video: Video;
   index: number;
   onClick: () => void;
-  showBeginner?: boolean;
   bookmark: ReactNode;
   bookmarkError?: string;
 }) {
   const external = video.source === "youtube" ? video : null;
+  const introTerms = videoTitleIntroTerms(video.title);
   const videoUrl = originalVideoLink(video.url);
   return (
     <article className="video-card">
@@ -1802,9 +1814,12 @@ function VideoCard({
           ) : (
             <>
               <span>{video.type}</span>
-              <span>공공기관</span>
-              {showBeginner && <BeginnerLabel title={video.title} />}
+              <span>공공기관 공개 영상</span>
+              {analyzedInstitutionVideos.get(video.id)?.field === "분류 확인 필요" && <span>분류 확인 필요</span>}
             </>
+          )}
+          {introTerms.length > 0 && (
+            <span className="beginner-label">제목에 입문 표현 · {introTerms.join("·")}</span>
           )}
         </div>
         <div className="video-title-row">
@@ -1818,6 +1833,7 @@ function VideoCard({
           <>
             <p>{video.channel}</p>
             <p>표본 난이도 {video.difficulty} · 신뢰도 {video.confidence}</p>
+            <p>표본 추천운동경험 · {video.experience}</p>
           </>
         ) : (
           <p>등록일 {video.date}</p>

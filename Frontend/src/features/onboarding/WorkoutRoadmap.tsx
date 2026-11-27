@@ -158,9 +158,9 @@ export default function WorkoutRoadmap({
           <>
             {bookmarkStatus}
             <p className="roadmap-guidance">
-              같은 종목과 관련 분야를 구분해 표시해요. 영상과 강좌는 각각의 공개 자료이며, 원하는
-              단계부터 살펴볼 수 있어요. 제목의 입문 표현과 외부 영상의 표본 평가는 탐색 순서에
-              활용합니다. 실제 난이도와 개인별 적합성은 별도 확인이 필요해요.
+              같은 종목과 같은 분야 대안은 각각의 공개 자료입니다. 영상이 특정 강좌의 공식 강습인지
+              확인되지 않았어요. 제목의 입문 표현과 외부 영상의 표본 추천운동경험은 탐색 순서에
+              따로 활용합니다.
             </p>
             {step === 1 ? (
               <RoadmapResults
@@ -271,6 +271,11 @@ function RoadmapResults<T extends Course | Video>({
   const inferredMatches = records.filter(
     (row) => row.relationship === "sport" && row.inferred,
   ).length;
+  const shown = records.slice(0, limit);
+  const groups = sport === allRoadmapSports ? [{ title: null, rows: shown }] : [
+    { title: "같은 종목", rows: shown.filter((row) => row.relationship === "sport") },
+    { title: "같은 분야 대안", rows: shown.filter((row) => row.relationship === "field") },
+  ];
 
   return (
     <div className="roadmap-results">
@@ -279,19 +284,16 @@ function RoadmapResults<T extends Course | Video>({
           <p aria-live="polite">
             {noun} {records.length}건
             {sport !== allRoadmapSports &&
-              ` · 같은 종목 ${direct}건${inferredMatches ? ` · 추정 일치 ${inferredMatches}건` : ""} · 관련 분야 ${records.length - direct - inferredMatches}건`}
+              ` · 같은 종목 ${direct}건${inferredMatches ? ` · 추정 일치 ${inferredMatches}건` : ""} · 같은 분야 ${records.length - direct - inferredMatches}건`}
           </p>
           {sport !== allRoadmapSports && !direct && !inferredMatches && (
             <p>선택한 종목과 일치하는 {noun}이 없어 같은 분야의 자료를 표시해요.</p>
           )}
-          <ul className={`${kind}-grid roadmap-result-grid`}>
-            {records
-              .slice(0, limit)
-              .map(
-                (
-                  { record, relationship, field, sport: discipline, introductoryTitle, inferred },
-                  index,
-                ) => (
+          {groups.filter(({ rows }) => rows.length).map(({ title, rows }) => (
+            <div className="result-group" key={title ?? kind}>
+              {title && <h3>{title}</h3>}
+              <ul className={`${kind}-grid roadmap-result-grid`}>
+                {rows.map(({ record, relationship, field, sport: discipline, introductoryTitle, inferred }, index) => (
                   <li key={recordKey(record)}>
                     <p className="roadmap-evidence">
                       <strong>
@@ -305,13 +307,14 @@ function RoadmapResults<T extends Course | Video>({
                       </strong>
                       {discipline ? ` · ${discipline}` : ` · ${field} · 세부 종목 미확인`}
                       {inferred && <span>종목 추정</span>}
-                      {introductoryTitle && <span>제목에 입문 표현</span>}
+                      {isCourse && introductoryTitle && <span>제목에 입문 표현</span>}
                     </p>
                     {render(record, index)}
                   </li>
-                ),
-              )}
-          </ul>
+                ))}
+              </ul>
+            </div>
+          ))}
           {records.length > limit && (
             <button
               className="secondary-button"
@@ -324,7 +327,11 @@ function RoadmapResults<T extends Course | Video>({
         </>
       ) : (
         <div className="compact-empty">
-          <p>첨부 자료에서 관련 {noun}을 찾지 못했어요. 다른 분야나 세부 종목을 골라 보세요.</p>
+          <p>
+            {kind === "video" && sport !== allRoadmapSports
+              ? "첨부 자료에서 같은 종목과 같은 분야의 연계 영상을 찾지 못했어요. 오프라인 강좌는 다음 단계에서 살펴볼 수 있어요."
+              : `첨부 자료에서 관련 ${noun}을 찾지 못했어요. 다른 분야나 세부 종목을 골라 보세요.`}
+          </p>
           <button className="text-button" type="button" onClick={edit}>
             다른 운동 찾아보기
           </button>

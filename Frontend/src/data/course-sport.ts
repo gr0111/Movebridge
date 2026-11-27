@@ -56,6 +56,10 @@ export const courseSportAliases: Readonly<Record<string, string>> = {
   실내승마교실: "실내승마",
 };
 
+export function danceSportFromTitle(title: string) {
+  return title.trim().match(/^(?:\d{2,4}\.\s*)?(모던|라틴)(?!\p{L})/u)?.[1];
+}
+
 /** User-approved contextual interpretation, not an officially verified abbreviation. */
 export function inferHolidaySport(course: { sport: string; title: string }) {
   if (course.sport.trim() !== "방학특강" || !/(?:^|[\s.])방특\s+배민(?=$|[\s(])/.test(course.title))
@@ -78,8 +82,8 @@ export function resolveCourseSport(course: { sport: string; title: string }) {
   const inference = inferHolidaySport(course);
   let displaySport = courseSportAliases[rawSport] || rawSport;
   if (rawSport === "댄스스포츠") {
-    const dance = course.title.trim().match(/^(?:\d{2,4}\.\s*)?(모던|라틴)/);
-    if (dance) displaySport = dance[1];
+    const dance = danceSportFromTitle(course.title);
+    if (dance) displaySport = dance;
   } else if (rawSport === "방학특강" || !rawSport || rawSport === "미기재") {
     // Full names take precedence; only the approved holiday phrase is inferred.
     const namedSport = Object.keys(sportIcons)

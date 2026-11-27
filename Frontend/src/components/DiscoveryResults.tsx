@@ -18,7 +18,7 @@ type Props = {
   onMoreVideos: () => void;
   onReset: () => void;
   renderCourse: (course: Course, showBeginner: boolean) => ReactNode;
-  renderVideo: (video: Video, index: number, showBeginner: boolean) => ReactNode;
+  renderVideo: (video: Video, index: number) => ReactNode;
 };
 
 function ResultGroups<T extends { title: string }>({
@@ -106,6 +106,11 @@ export default function DiscoveryResults({
   const beginner = searched && filters.experience === "처음 시작";
   const grouped = beginner && results.prioritize;
   const introCount = groupByBeginner([...results.online, ...results.offline]).first.length;
+  const linked = [...results.sameSport, ...results.sameField];
+  const linkedRecords = new Set(linked);
+  const metadataMatches = results.online.filter((video) => !linkedRecords.has(video));
+  const remainingVideoLimit = Math.max(0, videoLimit - linked.length);
+  const videoResultCount = linked.length + metadataMatches.length;
   const sortControl = (
     <label className="sort-select">
       <select
@@ -128,7 +133,7 @@ export default function DiscoveryResults({
               <h2>나의 조건으로 찾은 공개 자료</h2>
               <p>
                 첨부 샘플 내 온라인 {results.online.length}건 · 오프라인 {results.offline.length}건
-                · 참고영상은 별도 표시
+                · 같은 분야 대안은 별도 표시
               </p>
             </div>
             {sortControl}
@@ -146,8 +151,8 @@ export default function DiscoveryResults({
                     : "선택한 관심 분야와 기존 검색 조건으로 자료를 탐색합니다."}
               </p>
               <p>
-                관심 분야는 편의상 분류이며, 입문 표현은 난이도·운동 적합성 인증이 아닙니다.
-                온라인과 오프라인은 같은 분야의 독립 자료로, 특정 강좌와 영상의 1:1 연결이 아닙니다.
+                제목의 입문 표현과 표본 추천운동경험은 별개의 근거입니다. 영상과 강좌는 서로 독립된
+                자료이며, 연계는 운동 분야와 세부 종목을 기준으로 합니다.
               </p>
               {beginner && introCount === 0 && (
                 <strong>
@@ -186,41 +191,69 @@ export default function DiscoveryResults({
               난이도는 검증 CSV에 기록된 표본 구간 기준입니다. 요일·시간·금액 조건은 강좌에 적용됩니다.
             </span>
           </div>
-          {results.online.length ? (
+          {results.standardSport && (
+            <div className="result-groups" aria-label={`${results.standardSport} 영상 연계`}>
+              <section className="result-group" aria-labelledby="same-sport-videos">
+                <h3 id="same-sport-videos">같은 종목 <span>{results.sameSport.length}건</span></h3>
+                {results.sameSport.length ? (
+                  <div className="video-grid">
+                    {results.sameSport.slice(0, videoLimit).map(renderVideo)}
+                  </div>
+                ) : (
+                  <p>
+                    {results.hasVideoPath
+                      ? "현재 조건에 맞는 같은 종목 영상이 없어요."
+                      : "첨부 자료에서 같은 종목이나 같은 분야의 연계 영상을 찾지 못했어요. 강좌는 계속 살펴볼 수 있어요."}
+                  </p>
+                )}
+              </section>
+              {results.sameField.length > 0 && (
+                <section className="result-group">
+                  <h3>같은 분야 대안 <span>{results.sameField.length}건</span></h3>
+                  <p>같은 운동 분야의 별도 자료입니다. 강좌 공식 강습 여부는 확인되지 않았어요.</p>
+                  {videoLimit > results.sameSport.length && (
+                    <div className="video-grid">
+                      {results.sameField.slice(0, videoLimit - results.sameSport.length)
+                        .map(renderVideo)}
+                    </div>
+                  )}
+                </section>
+              )}
+              {metadataMatches.length > 0 && remainingVideoLimit > 0 && (
+                <section className="result-group">
+                  <h3>영상 제목·메타데이터 일치 <span>{metadataMatches.length}건</span></h3>
+                  <div className="video-grid">
+                    {metadataMatches.slice(0, remainingVideoLimit).map(renderVideo)}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
+          {!results.standardSport && (results.online.length ? (
             <ResultGroups
               records={results.online}
               limit={videoLimit}
               grouped={grouped}
               kind="video"
-              render={(video, index) => renderVideo(video, index, beginner)}
+              render={renderVideo}
             />
           ) : (
             <div className="compact-empty">
-              첨부 샘플에 선택한 분야와 검색어에 일치하는 영상 기록이 없어요. 다른 분야나 검색어를
-              선택해 주세요. 전체 서비스 데이터의 부재를 의미하지 않습니다.
+              첨부 샘플에 선택한 분야와 검색어에 일치하는 영상 기록이 없어요.
             </div>
-          )}
-          {hasMore(results.online, videoLimit, grouped) && (
+          ))}
+          {(results.standardSport
+            ? videoResultCount > videoLimit
+            : hasMore(results.online, videoLimit, grouped)) && (
             <div className="load-more">
               <button className="secondary-button" onClick={onMoreVideos}>
                 첨부 영상 더 보기
-                {grouped
+                {grouped && !results.standardSport
                   ? " · 표현 그룹별"
-                  : ` (${Math.min(videoLimit, results.online.length)} / ${results.online.length})`}
+                  : ` (${videoLimit} / ${videoResultCount})`}
                 <Icon name="chevron" size={16} />
               </button>
             </div>
-          )}
-          {results.related.length > 0 && (
-            <>
-              <h3 className="reference-heading">
-                같은 분야 참고영상{" "}
-                <span>직접 검색어 일치 결과와 별도이며, 특정 강좌와 연결되지 않습니다.</span>
-              </h3>
-              <div className="video-grid">
-                {results.related.map((video, index) => renderVideo(video, index, beginner))}
-              </div>
-            </>
           )}
         </section>
       )}

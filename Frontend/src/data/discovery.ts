@@ -3,29 +3,24 @@ import {
   videos,
   onlineVideos,
   searchCourses,
-  searchVideos,
-  searchRelatedVideos,
   matchesVideoQuery,
   searchableCourses,
   matchesCourseQuery,
 } from "./search.ts";
-import { classifyAnalysisCourse } from "./public-data-analysis.ts";
+import { analyzedCourses, classifyAnalysisCourse } from "./public-data-analysis.ts";
+import {
+  canonicalSport, isInterestField, isStandardSport, linkedVideos, linkableVideos,
+  matchesInterestField, sportTopics,
+} from "./content-linkage.ts";
+import type { FieldSelection, InterestField } from "./content-linkage.ts";
 import type { Course, Video, Filters } from "./search.ts";
 
-export const interestFields = [
-  "유연성·스트레칭",
-  "근력·체력 향상",
-  "리듬·댄스",
-  "수영·수중운동",
-  "유산소·러닝·사이클",
-  "기타 운동",
-] as const;
-export type InterestField = (typeof interestFields)[number];
+export { interestFields } from "./content-linkage.ts";
 export type ContentField = InterestField | "분류 확인 필요" | "운동 외 콘텐츠";
 export const experienceOptions = ["상관없음", "처음 시작", "운동 경험 있음"] as const;
 export type Experience = (typeof experienceOptions)[number];
 export type DiscoveryFilters = Filters & {
-  field: InterestField | "전체 분야";
+  field: FieldSelection;
   experience: Experience;
 };
 export type ResultSort = "default" | "price" | "time";
@@ -40,9 +35,15 @@ export const fieldRules: { field: InterestField; terms: string[] }[] = [
     field: "유산소·러닝·사이클",
     terms: ["로드사이클", "사이클", "스피닝", "러닝", "워킹", "트램폴린"],
   },
+  { field: "라켓 스포츠", terms: ["배드민턴", "탁구", "테니스"] },
+  { field: "골프", terms: ["골프"] },
+  { field: "당구", terms: ["당구"] },
+  { field: "승마", terms: ["실내승마"] },
+  { field: "구기 스포츠", terms: ["농구"] },
+  { field: "무도·격투 스포츠", terms: ["검도"] },
   {
     field: "기타 운동",
-    terms: ["검도", "골프", "농구", "배드민턴", "탁구", "테니스", "당구", "승마"],
+    terms: ["라켓 스포츠", "골프", "당구", "승마", "구기 스포츠", "무도·격투 스포츠"],
   },
 ];
 const normalize = (value: string) => value.replace(/\s+/g, "").toLocaleLowerCase("ko-KR");
@@ -61,22 +62,13 @@ export function analyzeBeginnerTitle(title: string) {
   };
 }
 
-export function classifyCourse(
-  course: Pick<Course, "title" | "sport">,
-): {
-  field: ContentField;
-  evidence: string;
-} {
-  const { field, evidence } = classifyAnalysisCourse(course);
-  if (field === "분류 확인 필요" || field === "운동 외 콘텐츠") return { field, evidence };
-  return { field: interestFields.find((interest) => interest === field) ?? "기타 운동", evidence };
-}
+export { classifyAnalysisCourse as classifyCourse };
 export function classifyVideo(video: Pick<Video, "title" | "sport">): {
   field: ContentField;
   evidence: string;
 } {
-  if (interestFields.some((field) => field === video.sport))
-    return { field: video.sport as InterestField, evidence: "첨부 CSV 관심분야 필드" };
+  if (isInterestField(video.sport))
+    return { field: video.sport, evidence: "첨부 CSV 관심분야 필드" };
   if (video.sport === "운동 외 콘텐츠")
     return { field: "운동 외 콘텐츠", evidence: "첨부 CSV 관심분야 필드" };
   // Do not turn a reviewed-as-uncertain field into a sport based on an ambiguous title.
@@ -85,7 +77,7 @@ export function classifyVideo(video: Pick<Video, "title" | "sport">): {
 export const courseDiscovery = new Map(
   courses.map((course) => [
     course.id,
-    { ...classifyCourse(course), ...analyzeBeginnerTitle(course.title) },
+    { ...analyzedCourses.get(course.id)!, ...analyzeBeginnerTitle(course.title) },
   ]),
 );
 export const videoDiscovery = new Map(
@@ -98,66 +90,22 @@ export const videoDiscovery = new Map(
 type DetailContext = Pick<DiscoveryFilters, "field" | "mode">;
 export type DetailOptions = { sports: string[]; videoTitles: string[] };
 const inDetailField = (field: ContentField, context: DetailContext) =>
-  context.field === "전체 분야" || context.field === field;
-
-// Reuse the same classified records as search/analysis. A video mentioning golf
-// inside a strength exercise does not turn "골프" into a strength sport option.
-const detailSportFields = new Map<string, Set<ContentField>>();
-const addDetailSport = (sport: string, field: ContentField) => {
-  const fields = detailSportFields.get(sport) || new Set<ContentField>();
-  fields.add(field);
-  detailSportFields.set(sport, fields);
-};
-for (const course of searchableCourses) {
-  if (course.sport !== "미기재")
-    addDetailSport(course.sport, courseDiscovery.get(course.id)!.field);
-}
-for (const video of videos) {
-  const field = videoDiscovery.get(video.id)!.field;
-  for (const rule of fieldRules) {
-    if (rule.field !== field) continue;
-    for (const term of rule.terms) {
-      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      // Keep literal source words, not substrings such as 댄스 in 라인댄스 or
-      // 근력 in 근력운동. Existing CSV sport names remain available above.
-      if (new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, "iu").test(video.title))
-        addDetailSport(term, field);
-    }
-  }
-}
+  matchesInterestField(field, context.field);
 
 /** Options depend only on the field, mode and real records, never experience or budget. */
 export function getDetailOptions(context: DetailContext): DetailOptions {
-  const offline =
-    context.mode === "online"
-      ? []
-      : searchableCourses.filter((course) =>
-          inDetailField(courseDiscovery.get(course.id)!.field, context),
-        );
+  const offline = context.mode === "online" ? [] : searchableCourses;
   const online =
     context.mode === "offline"
       ? []
       : onlineVideos.filter((video) => inDetailField(videoDiscovery.get(video.id)!.field, context));
-  const sports = [...detailSportFields]
-    .filter(
-      ([sport, fields]) =>
-        [...fields].some((field) => inDetailField(field, context)) &&
-        (offline.some(
-          (course) =>
-            fields.has(courseDiscovery.get(course.id)!.field) && matchesCourseQuery(course, sport),
-        ) ||
-          online.some(
-            (video) =>
-              fields.has(videoDiscovery.get(video.id)!.field) &&
-              matchesVideoQuery(video, sport),
-          )),
-    )
-    .map(([sport]) => sport);
-  const externalSports = online.flatMap((video) =>
-    video.source === "youtube" ? [video.discipline] : [],
+  const onlineTopics = context.mode === "offline" ? [] : linkableVideos;
+  const topics = [...offline.map(({ id }) => courseDiscovery.get(id)!), ...onlineTopics];
+  const sports = topics.flatMap(({ field, sport }) =>
+    sport && inDetailField(field, context) ? [sport] : [],
   );
   return {
-    sports: [...new Set([...sports, ...externalSports])],
+    sports: [...new Set(sports)],
     videoTitles: [...new Set(online.map((video) => video.title))],
   };
 }
@@ -166,15 +114,10 @@ export function isDetailSelectionValid(query: string, context: DetailContext) {
   if (!query || query === "전체 종목") return true;
   const options = getDetailOptions(context);
   const exact = (value: string) => normalize(value) === normalize(query);
-  if ([...options.sports, ...options.videoTitles].some(exact)) return true;
+  if (isStandardSport(query)) return options.sports.includes(canonicalSport(query));
+  if (options.videoTitles.some(exact)) return true;
   // A known selection must still occur in the new context's list.
-  if (
-    [...detailSportFields.keys()].some(exact) ||
-    onlineVideos.some((video) =>
-      exact(video.title) || (video.source === "youtube" && exact(video.discipline)),
-    )
-  )
-    return false;
+  if (onlineVideos.some((video) => exact(video.title))) return false;
   // Preserve free-text search when it still has source evidence in this context.
   return (
     (context.mode !== "online" &&
@@ -223,14 +166,23 @@ export function groupByBeginner<T extends { title: string }>(records: T[]) {
   };
 }
 export function searchDiscovery(filters: DiscoveryFilters, sort: ResultSort = "default") {
-  const inField = (field: ContentField) => filters.field === "전체 분야" || filters.field === field;
+  const inField = (field: ContentField) => matchesInterestField(field, filters.field);
+  const standardSport = isStandardSport(filters.sport) ? canonicalSport(filters.sport) : null;
+  const topics = standardSport ? sportTopics(standardSport, filters.field) : [];
+  const links = linkedVideos(topics);
+  const matchesExperience = (video: Video) => matchesVideoExperience(video, filters.experience);
   const prioritize = filters.experience === "처음 시작" && sort === "default";
   const priority = (a: Course | Video, b: Course | Video) =>
     prioritize
       ? Number(isBeginnerRecord(b)) - Number(isBeginnerRecord(a))
       : 0;
-  const offline = (filters.mode === "online" ? [] : searchCourses(filters))
-    .filter((course) => inField(courseDiscovery.get(course.id)!.field))
+  const offline = (filters.mode === "online" ? [] : searchCourses({
+    ...filters, sport: standardSport ? "전체 종목" : filters.sport,
+  }))
+    .filter((course) => {
+      const topic = courseDiscovery.get(course.id)!;
+      return inField(topic.field) && (!standardSport || topic.sport === standardSport);
+    })
     .sort(
       (a, b) =>
         (sort === "price"
@@ -239,21 +191,17 @@ export function searchDiscovery(filters: DiscoveryFilters, sort: ResultSort = "d
             ? a.start - b.start
             : priority(a, b)) || a.id - b.id,
     );
-  const online = (filters.mode === "offline" ? [] : searchVideos(filters.sport))
-    .filter((video) => inField(videoDiscovery.get(video.id)!.field))
-    .filter((video) => matchesVideoExperience(video, filters.experience))
+  const sameSport = filters.mode === "offline" ? [] : links.sameSport.filter(matchesExperience).sort(priority);
+  const sameField = filters.mode === "offline" ? [] : links.sameField.filter(matchesExperience).sort(priority);
+  const directLinks = new Set(sameSport);
+  const online = (filters.mode === "offline" ? [] : onlineVideos)
+    .filter((video) => directLinks.has(video) || (
+      inField(videoDiscovery.get(video.id)!.field) && matchesVideoQuery(video, filters.sport)
+    ))
+    .filter(matchesExperience)
     .sort(priority);
-  const related =
-    filters.mode === "offline"
-      ? []
-      : searchRelatedVideos(filters.sport)
-          .filter(
-            (video) =>
-              inField(videoDiscovery.get(video.id)!.field) &&
-              !online.some((match) => match.id === video.id),
-          )
-          .sort(priority);
-  return { offline, online, related, prioritize };
+  const hasVideoPath = links.sameSport.length + links.sameField.length > 0;
+  return { offline, online, sameSport, sameField, standardSport: topics.length ? standardSport : null, hasVideoPath, prioritize };
 }
 
 export const beginnerTotals = {

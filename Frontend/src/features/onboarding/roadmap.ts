@@ -1,17 +1,16 @@
-import { analyzeBeginnerTitle, interestFields } from "../../data/discovery.ts";
+import { analyzeBeginnerTitle } from "../../data/discovery.ts";
 import { getCourseStatus } from "../../data/course-status.ts";
-import type { Experience, InterestField } from "../../data/discovery.ts";
+import type { Experience } from "../../data/discovery.ts";
 import {
-  analyzedCourses,
-  analyzedInstitutionVideos,
-  discoveryDistribution,
-} from "../../data/public-data-analysis.ts";
-import { onlineVideos, searchableCourses } from "../../data/search.ts";
+  canonicalSport, interestFields, isInterestField, linkableVideos,
+  matchesInterestField, topicRelationship, videoTitleIntroTerms,
+} from "../../data/content-linkage.ts";
+import type { FieldSelection, InterestField } from "../../data/content-linkage.ts";
+import { analyzedCourses } from "../../data/public-data-analysis.ts";
+import { searchableCourses } from "../../data/search.ts";
 import type { Course, Video } from "../../data/search.ts";
 
-type AnalysisField = (typeof discoveryDistribution)[number]["field"];
-type SportField = Exclude<AnalysisField, "분류 확인 필요" | "운동 외 콘텐츠">;
-export type RoadmapField = "전체 분야" | SportField;
+export type RoadmapField = FieldSelection;
 type Conditions = { field: RoadmapField; sport: string; experience: Experience };
 export type RoadmapState = Conditions & { step: number };
 export const roadmapSteps = [
@@ -30,20 +29,15 @@ export const initialRoadmap: RoadmapState = {
 
 type Entry<T> = {
   record: T;
-  field: SportField;
+  field: InterestField;
   sport: string | null;
   inferred: boolean;
   introductoryTitle: boolean;
 };
 type RoadmapEntry<T> = Entry<T> & { relationship: "sport" | "field" };
-const isSportField = (field: AnalysisField): field is SportField =>
-  field !== "분류 확인 필요" && field !== "운동 외 콘텐츠";
-const isSearchField = (field: string): field is InterestField =>
-  interestFields.some((item) => item === field);
-
 const courses: Entry<Course>[] = searchableCourses.flatMap((record) => {
   const classification = analyzedCourses.get(record.id);
-  return classification && isSportField(classification.field) && classification.sport &&
+  return classification && isInterestField(classification.field) && classification.sport &&
     getCourseStatus(record).canRecommend
     ? [
         {
@@ -57,44 +51,20 @@ const courses: Entry<Course>[] = searchableCourses.flatMap((record) => {
     : [];
 });
 
-const videos: Entry<Video>[] = onlineVideos.flatMap((record) => {
-  const classification =
-    record.source === "institution"
-      ? analyzedInstitutionVideos.get(record.id)
-      : isSearchField(record.sport)
-        ? { field: record.sport, sport: record.discipline }
-        : undefined;
-  if (!classification || !isSportField(classification.field)) return [];
-  if (record.source === "institution" && /접수·신청|행사 후보|예고·홍보/.test(record.type))
-    return [];
-  return [
-    {
-      record,
-      field: classification.field,
-      sport: classification.sport,
-      inferred: false,
-      introductoryTitle: analyzeBeginnerTitle(record.title).hasBeginnerKeyword,
-    },
-  ];
-});
+const videos: Entry<Video>[] = linkableVideos.map((entry) => ({
+  ...entry,
+  inferred: false,
+  introductoryTitle: videoTitleIntroTerms(entry.record.title).length > 0,
+}));
 
 const catalog: readonly Entry<Course | Video>[] = [...courses, ...videos];
 export const roadmapFields: readonly RoadmapField[] = [
   "전체 분야",
-  ...interestFields.filter((field) => field !== "기타 운동"),
-  ...discoveryDistribution
-    .filter(
-      ({ field, offline, online }) =>
-        !isSearchField(field) && isSportField(field) && offline + online > 0,
-    )
-    .map(({ field }) => field as SportField),
-  "기타 운동",
+  ...interestFields,
 ];
 
 function inField(entry: Entry<Course | Video>, field: RoadmapField) {
-  if (field === "전체 분야" || entry.field === field) return true;
-  // The existing search filter groups these disciplines under 기타 운동.
-  return field === "기타 운동" && !isSearchField(entry.field);
+  return matchesInterestField(entry.field, field);
 }
 
 export function roadmapSports(field: RoadmapField) {
@@ -105,7 +75,8 @@ export function roadmapSports(field: RoadmapField) {
 
 export function updateRoadmap(state: RoadmapState, changes: Partial<Conditions>): RoadmapState {
   const next = { ...state, ...changes };
-  const sport = roadmapSports(next.field).includes(next.sport) ? next.sport : allRoadmapSports;
+  const selectedSport = canonicalSport(next.sport);
+  const sport = roadmapSports(next.field).includes(selectedSport) ? selectedSport : allRoadmapSports;
   return { ...next, sport };
 }
 
@@ -114,18 +85,12 @@ export function moveRoadmap(state: RoadmapState, index: number): RoadmapState {
 }
 
 export function roadmapResults(conditions: Conditions) {
-  const { field, sport, experience } = conditions;
+  const { field, experience } = conditions;
+  const sport = canonicalSport(conditions.sport);
   const narrowed = sport !== allRoadmapSports;
-  const relatedFields = new Set(
-    catalog
-      .filter((entry) => inField(entry, field) && entry.sport === sport)
-      .map((entry) => entry.field),
-  );
-  const exact = (entry: Entry<Course | Video>) => narrowed && entry.sport === sport;
-  const rankVisit = (entry: Entry<Course | Video>) => {
-    const matches = exact(entry);
-    return matches ? (entry.inferred ? 1 : 0) : 2;
-  };
+  const topics = narrowed ? catalog.filter((entry) => inField(entry, field) && entry.sport === sport) : [];
+  const rankVisit = (entry: RoadmapEntry<Course | Video>) =>
+    entry.relationship === "sport" ? (entry.inferred ? 1 : 0) : 2;
   const rankExperience = (entry: Entry<Course | Video>) => {
     const { record } = entry;
     const sample = "experience" in record ? record.experience : undefined;
@@ -134,14 +99,17 @@ export function roadmapResults(conditions: Conditions) {
     if (experience === "운동 경험 있음") return sample === "중급" || sample === "고급" ? 0 : 1;
     return 0;
   };
-  const rank = (a: Entry<Course | Video>, b: Entry<Course | Video>) =>
+  const rank = (a: RoadmapEntry<Course | Video>, b: RoadmapEntry<Course | Video>) =>
     rankVisit(a) - rankVisit(b) || rankExperience(a) - rankExperience(b);
 
   function resultsFor<T extends Course | Video>(entries: readonly Entry<T>[]): RoadmapEntry<T>[] {
     return entries
-      .filter((entry) => inField(entry, field) && (!narrowed || relatedFields.has(entry.field)))
-      .sort(rank)
-      .map((entry) => ({ ...entry, relationship: exact(entry) ? "sport" : "field" }));
+      .flatMap<RoadmapEntry<T>>((entry) => {
+        if (!inField(entry, field)) return [];
+        const relationship = narrowed ? topicRelationship(entry, topics) : "field";
+        return relationship ? [{ ...entry, relationship }] : [];
+      })
+      .sort(rank);
   }
 
   // Preserve source video order and the existing default course ID order on ties.

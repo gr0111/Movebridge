@@ -42,7 +42,7 @@ test("broad fields use actual sport words, not registration requirements or infe
     ["헬스", "근력·체력 향상"],
     ["라인댄스", "리듬·댄스"],
     ["댄스스포츠", "리듬·댄스"],
-    ["검도", "기타 운동"],
+    ["검도", "무도·격투 스포츠"],
     ["로드사이클", "유산소·러닝·사이클"],
   ]) {
     const actual = courses.find((course) => course.sport === sport);
@@ -162,24 +162,25 @@ test("D: missing records and absent beginner wording produce empty groups, never
   const none = searchDiscovery({ ...all, sport: "존재하지않는강좌", experience: "처음 시작" });
   assert.deepEqual(none.offline, []);
   assert.deepEqual(none.online, []);
-  assert.deepEqual(none.related, []);
+  assert.deepEqual(none.sameSport, []);
+  assert.deepEqual(none.sameField, []);
   const swim = searchDiscovery({ ...all, field: "수영·수중운동", experience: "처음 시작" });
   assert.ok(groupByBeginner(swim.online).other.length > 0);
   assert.equal(groupByBeginner(swim.online).first.length, 0);
 });
 
-test("related-field videos never duplicate direct results or escape the selected field", () => {
+test("related-field videos never duplicate same-sport cards or escape the selected field", () => {
   const result = searchDiscovery({ ...all, field: "유연성·스트레칭", sport: "요가" });
-  assert.ok(result.related.length > 0);
+  assert.ok(result.sameField.length > 0);
   assert.ok(
-    result.related.every(
+    result.sameField.every(
       (video) =>
         videoDiscovery.get(video.id).field === "유연성·스트레칭" &&
-        !result.online.some((direct) => direct.id === video.id),
+        !result.sameSport.includes(video),
     ),
   );
   assert.equal(
-    searchDiscovery({ ...all, field: "근력·체력 향상", sport: "요가" }).related.length,
+    searchDiscovery({ ...all, field: "근력·체력 향상", sport: "요가" }).sameField.length,
     0,
   );
 });
