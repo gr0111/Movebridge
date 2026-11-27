@@ -1,7 +1,5 @@
 # MOVEBRIDGE
 
-무브릿 React 프로젝트는 `Frontend/`에 있습니다.
-
 ```sh
 cd Frontend
 pnpm install --frozen-lockfile
