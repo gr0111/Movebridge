@@ -177,7 +177,7 @@ export default function MyPage({
               <div>
                 <h2 id="weekly-preview-title">나의 운동 시간표 미리보기</h2>
                 <p>
-                  저장한 강좌 {courses.length}개 · 주간 일정 {sessions}건
+                  저장한 강좌 {courses.length}개 · 공개 강좌 참고 일정 {sessions}건
                 </p>
               </div>
               <button

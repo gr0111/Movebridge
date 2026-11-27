@@ -1,0 +1,41 @@
+url: http://127.0.0.1:4175/
+name: Public course availability and schedule safeguards
+---
+- launchApp
+- tapOn: "^운동 찾기$"
+- scrollUntilVisible:
+    element:
+      id: "^sport$"
+    direction: DOWN
+- tapOn:
+    id: "^sport$"
+- inputText: "일시중지"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "나의 조건으로 찾은 공개 자료"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: '.*실내승마 \(17:00–17:50\).*'
+    direction: DOWN
+- assertVisible: "원본에 일시중지 표기 · 자동 일정 제외"
+- tapOn:
+    id: "^실내승마교실 17:00 화목 - 일시중지 관심 표시$"
+- assertVisible:
+    id: "^실내승마교실 17:00 화목 - 일시중지 관심 해제$"
+- tapOn: '.*실내승마 \(17:00–17:50\).*'
+- assertVisible: "공개 강좌 기록 · 현재 운영·모집 미확인"
+- tapOn:
+    id: "^상세 정보 닫기$"
+- scrollUntilVisible:
+    element:
+      text: '^나의 운동 시간표\s*$'
+    direction: UP
+- tapOn: '^나의 운동 시간표\s*$'
+- assertVisible: "선택한 주의 시간표가 비어 있어요."
+- scrollUntilVisible:
+    element:
+      text: "자동 시간표 확인 · 원본에 일시중지 표기"
+    direction: DOWN
+- assertVisible: "자동 시간표 확인 · 원본에 일시중지 표기"
+- assertVisible: "^북마크 해제.*$"

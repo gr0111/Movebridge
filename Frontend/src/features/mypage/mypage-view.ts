@@ -1,3 +1,6 @@
+import type { Course } from "../../data/search.ts";
+import { scheduleEntries, weekOf } from "../workout-planner/planner-model.ts";
+
 export function readMyPageLocation(url: URL) {
   return url.searchParams.get("view") === "mypage";
 }
@@ -13,14 +16,16 @@ export function myPageAccess(pending: boolean, owner: string | null) {
   return pending ? "loading" : owner ? "member" : "guest";
 }
 
-export function weeklyPreview<T extends { days: number[]; start: number }>(
-  courses: readonly T[],
+export function weeklyPreview(
+  courses: readonly Course[],
   dayLabels: readonly string[],
+  dates = weekOf(),
 ) {
+  const entries = scheduleEntries(courses, [], dates);
   return dayLabels.map((day, index) => ({
     day,
-    courses: courses
-      .filter((course) => course.days.includes(index))
-      .sort((a, b) => a.start - b.start),
+    courses: entries.flatMap((entry) =>
+      entry.kind === "course" && entry.day === index ? [entry.source] : [],
+    ),
   }));
 }

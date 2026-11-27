@@ -24,6 +24,8 @@ export const courses = rawCourses.map((row) => ({
   end: decimalTime(row.시간_종료),
   price: Number(row.수강금액),
   month: row.수강월,
+  startDate: row.수강시작일,
+  endDate: row.수강종료일,
   audience: row.수강대상 || "미기재",
   longTimeReview: row.시간_장시간검토 === "True",
 }));
