@@ -1,0 +1,15 @@
+url: http://127.0.0.1:4175/?view=data#data-records
+name: Public audit records and dashboard denominators
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "분류 근거 조회 시작"
+    timeout: 10000
+- tapOn: "분류 근거 조회 시작"
+- scrollUntilVisible:
+    element:
+      id: "^audit-evidence-caption$"
+    direction: DOWN
+- assertVisible: '^분류 근거 · 일치 2,137건 중 1–25번째 기록$'
+- assertVisible: "원본 종목"
+- assertVisible: "상태 / 근거"

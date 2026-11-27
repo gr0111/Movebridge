@@ -1,8 +1,7 @@
-import { useRef, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import Icon, { type IconName } from "./components/Icon";
+import { lazy, Suspense, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import Icon from "./components/Icon";
 import DiscoveryResults from "./components/DiscoveryResults";
-import DiscoveryAnalysis from "./components/DiscoveryAnalysis";
 import DetailCombobox from "./components/DetailCombobox";
 import { videoTitleIntroTerms } from "./data/content-linkage";
 import { analyzedCourses, analyzedInstitutionVideos } from "./data/public-data-analysis";
@@ -11,7 +10,6 @@ import {
   experienceOptions,
   searchDiscovery,
   analyzeBeginnerTitle,
-  beginnerChart,
   fieldRules,
   getDetailOptions,
   updateDiscoveryFilter,
@@ -25,14 +23,9 @@ import {
   videos,
   onlineVideos,
   days,
-  sampleCharts,
   searchableCourses,
-  excludedCourses,
-  courseEligibility,
-  courseExclusionSummary,
 } from "./data/search";
 import { COURSE_PAGE_SIZE, COURSE_LOAD_MORE_SIZE } from "./data/course-pagination";
-import { externalVideos } from "./data/external-videos";
 import type { Course, Video } from "./data/search";
 import AuthControls from "./components/auth/AuthControls";
 import { useAuth } from "./auth/AuthProvider";
@@ -45,6 +38,8 @@ import WorkoutSummary from "./features/workout-planner/WorkoutSummary";
 import WorkoutRoadmap from "./features/onboarding/WorkoutRoadmap";
 import { initialRoadmap, originalVideoLink } from "./features/onboarding/roadmap";
 import { myPageAccess, readMyPageLocation, withMyPageLocation } from "./features/mypage/mypage-view";
+
+const DataDashboard = lazy(() => import("./features/data-dashboard/DataDashboard"));
 
 function Brand({ small = false }: { small?: boolean }) {
   return (
@@ -283,6 +278,7 @@ function App() {
     const url = new URL(window.location.href);
     if (url.searchParams.get("view") === "schedule") return "schedule";
     if (url.searchParams.get("view") === "onboarding") return "onboarding";
+    if (url.searchParams.get("view") === "data") return "data";
     return readMyPageLocation(url) ? "mypage" : "home";
   });
   const [roadmap, setRoadmap] = useState(initialRoadmap);
@@ -306,9 +302,10 @@ function App() {
   const navigate = (next: Page) => {
     const current = new URL(window.location.href);
     const destination = withMyPageLocation(current, next === "mypage");
-    if (next === "schedule" || next === "onboarding") destination.searchParams.set("view", next);
-    else if (["schedule", "onboarding"].includes(destination.searchParams.get("view") ?? ""))
+    if (next === "schedule" || next === "onboarding" || next === "data") destination.searchParams.set("view", next);
+    else if (["schedule", "onboarding", "data"].includes(destination.searchParams.get("view") ?? ""))
       destination.searchParams.delete("view");
+    if (page === "data") destination.hash = "";
     if (destination.href !== current.href) window.history.replaceState(window.history.state, "", destination);
     setPage(next);
     if (next !== "schedule") setRequestWorkout(false);
@@ -925,129 +922,9 @@ function App() {
               title="공공체육 데이터 현황"
               text="공개 데이터로 살펴보는 우리의 운동, 더 쉽게 한눈에."
             />
-            <div className="stats-grid">
-              {[
-                {
-                  label: "첨부 샘플 · 오프라인 강좌 기록",
-                  value: String(courses.length),
-                  unit: "건",
-                  note: "2026년 수강월 기준",
-                  icon: "calendar",
-                },
-                {
-                  label: "공공기관 온라인 영상 메타데이터",
-                  value: String(videos.length),
-                  unit: "건",
-                  note: "강습 여부 검토 전",
-                  icon: "play",
-                },
-                {
-                  label: "첨부 샘플 · 오프라인 종목 분류",
-                  value: String(new Set(courses.map((course) => course.sport)).size),
-                  unit: "개",
-                  note: "미기재 포함",
-                  icon: "grid",
-                },
-              ].map((s) => (
-                <div className="stat-card" key={s.label}>
-                  <p>{s.label}</p>
-                  <div className="stat-value">
-                    <span className="stat-icon" aria-hidden="true">
-                      <Icon name={s.icon as IconName} size={23} />
-                    </span>
-                    <strong>
-                      {s.value}
-                      <span>{s.unit}</span>
-                    </strong>
-                  </div>
-                  <small>{s.note}</small>
-                </div>
-              ))}
-            </div>
-            <p className="section-footnote">
-              <Icon name="play" size={16} />
-              외부 YouTube 영상 {externalVideos.length}건은 아래 공공데이터 통계와 별도로 집계합니다.
-            </p>
-            <section
-              className="info-box course-eligibility-summary"
-              aria-label="강좌 탐색 대상과 기본 제외 기준"
-            >
-              <Icon name="info" />
-              <div>
-                <strong>
-                  원본 {courses.length}건 보존 · 일반 강좌 탐색 대상 {searchableCourses.length}건 ·
-                  기본 제외 {excludedCourses.length}건
-                </strong>
-                <p>
-                  아래 그래프는 제외 기록도 포함한 원본 전체 샘플 기준입니다. 검색 결과는 탐색
-                  대상에서 선택한 조건에 일치하는 기록만 표시합니다. ‘자유이용’ 같은 제목만으로 시설
-                  이용권이라고 확정하지 않으며, 종목이 확인되는 자율이용·방학특강은 일괄 제외하지
-                  않습니다.
-                </p>
-                <details>
-                  <summary>기본 제외 사유와 원본 기록 확인</summary>
-                  <ul>
-                    {courseExclusionSummary.map((item) => (
-                      <li key={item.reason}>
-                        {item.reason} · {item.count}건
-                      </li>
-                    ))}
-                  </ul>
-                  <ul>
-                    {excludedCourses.map((course) => (
-                      <li key={course.id}>
-                        원본 일련번호 {course.id} · {course.title} · 원본 종목 {course.sport} ·{" "}
-                        {courseEligibility.get(course.id)!.exclusionReason}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </div>
-            </section>
-            <div className="info-box">
-              <Icon name="info" />
-              <div>
-                <strong>첨부 샘플 범위의 집계입니다. 서비스 전체 통계가 아닙니다.</strong>
-                <p>
-                  그래프는 첨부 CSV의 실제 기록을 집계합니다. 요일은 기본 표기만 반영하고 괄호 안
-                  요일은 제외합니다. 여러 요일의 강좌는 각 요일에 중복 집계되며, 원본 종목 표기 그래프는
-                  상위 5개를 개별 표시합니다. 집계 범위는 첨부 샘플로, 현재 운영 현황이나 수요를 뜻하지 않습니다.
-                </p>
-              </div>
-            </div>
-            <div className="charts-grid">
-              {sampleCharts.map((chart) => (
-                <BarChart key={chart.title} {...chart} />
-              ))}
-            </div>
-            <section className="discovery-analytics">
-              <div className="section-heading">
-                <div>
-                  <span className="section-eyebrow">CONTENT EXPLORATION</span>
-                  <h2>운동 종목 분포와 입문 관련 표현</h2>
-                  <p>
-                    원본 강좌 400건과 공공기관 영상 56건을 집계합니다. 외부 YouTube 영상 131건은 별도 집계합니다.
-                  </p>
-                </div>
-              </div>
-              <div className="charts-grid">
-                <DiscoveryAnalysis />
-                <div className="beginner-analysis">
-                  <BarChart {...beginnerChart} />
-                  <div className="info-box">
-                    <Icon name="info" size={18} />
-                    <div>
-                      <strong>원본 제목의 표현을 집계한 지표입니다.</strong>
-                      <p>
-                        두 공공데이터 샘플에는 설명 필드가 없어 원본 강좌명과 영상 제목에서 입문·초급·기초·Beginner를 확인합니다.
-                        기초체력·기초대사량과 초급/중급 등 혼합 수준 표기는 제외합니다. 실제 난이도와 개인별 적합성은 별도 확인이 필요합니다.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <Limitations />
+            <Suspense fallback={<p className="info-box" role="status">공공데이터 분석을 불러오는 중이에요.</p>}>
+              <DataDashboard />
+            </Suspense>
           </div>
         )}
 
@@ -1872,45 +1749,6 @@ function PageHeading({ eyebrow, title, text }: { eyebrow: string; title: string;
       <h1>{title}</h1>
       <p>{text}</p>
     </div>
-  );
-}
-function BarChart({
-  title,
-  labels,
-  values,
-}: {
-  title: string;
-  labels: string[];
-  values: number[];
-}) {
-  return (
-    <section className="chart-card">
-      <div className="chart-heading">
-        <h3>{title}</h3>
-        <span className="sample-tag">첨부 샘플 집계</span>
-      </div>
-      <p>첨부 샘플 기록 수 (건) · 서비스 전체 통계 아님</p>
-      <div className="bar-chart">
-        {labels.map((label, i) => (
-          <div className="bar-item" key={label}>
-            <div className="bar-track">
-              <span
-                style={
-                  {
-                    height: `${(values[i] / Math.max(...values, 1)) * 90}%`,
-                    "--bar-opacity": 1 - i * 0.08,
-                  } as CSSProperties
-                }
-              >
-                <b className="bar-value">{values[i]}</b>
-              </span>
-            </div>
-            <span className="bar-label">{label}</span>
-          </div>
-        ))}
-      </div>
-      <span className="chart-note">첨부 CSV 기준 · 현재 운영·모집 여부와 무관합니다.</span>
-    </section>
   );
 }
 function Limitations() {

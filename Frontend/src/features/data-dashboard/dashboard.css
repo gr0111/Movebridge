@@ -1,0 +1,141 @@
+.dashboard-stack {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dashboard-page { gap: 24px; }
+.dashboard-page .stats-grid { margin-bottom: 0; }
+.dashboard-page .stat-card { min-width: 0; }
+.dashboard-page .stat-value > strong { font-size: clamp(26px, 4vw, 40px); }
+.dashboard-page .stat-value { flex-wrap: wrap; }
+.dashboard-page .info-box { margin: 0; }
+.dashboard-nav, .dashboard-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.dashboard-controls { justify-content: space-between; }
+.dashboard-nav a {
+  padding: 8px 12px;
+  color: var(--accent);
+  background: var(--brand-tint);
+  border-radius: 8px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dashboard-page h2 { font-size: clamp(19px, 3vw, 25px); font-weight: 650; }
+.dashboard-page h3 { font-weight: 650; }
+.dashboard-panel {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+}
+.dashboard-panel, #sample-analysis { scroll-margin-top: 16px; }
+.dashboard-panel > p, .dashboard-stack > p, .dashboard-note p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+.dashboard-columns {
+  display: grid;
+  align-items: start;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-chart {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.dashboard-chart > p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.dashboard-bar-list { display: grid; gap: 10px; }
+.dashboard-bar-list > li { display: grid; gap: 3px; }
+.dashboard-bar-list strong { font-size: 13px; }
+.dashboard-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.dashboard-bar-row > span:not(.distribution-track) { flex: 0 0 63px; }
+.dashboard-bar-row .distribution-track { flex: 1 1 auto; min-width: 0; }
+.dashboard-bar-row > b { flex: 0 0 38px; text-align: end; color: var(--text); }
+.dashboard-bar-row .dashboard-series-1 > span { background: var(--accent); }
+.dashboard-bar-row .dashboard-series-2 > span { background: color-mix(in srgb, var(--brand) 65%, var(--surface)); }
+
+.dashboard-table {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.dashboard-table:focus-visible, .dashboard-nav a:focus-visible, .dashboard-panel select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.dashboard-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.dashboard-table caption {
+  padding: 9px 11px;
+  color: var(--text-secondary);
+  text-align: start;
+}
+.dashboard-table th, .dashboard-table td {
+  padding: 8px 11px;
+  border-top: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+.dashboard-table thead { background: var(--brand-tint); }
+.dashboard-table th { font-weight: 650; }
+.dashboard-table td small, .dashboard-table th small { display: block; color: var(--text-secondary); }
+#data-records .dashboard-table table:has(#audit-evidence-caption) { min-width: 670px; }
+#data-records .dashboard-table table:has(#audit-evidence-caption) td:last-child { min-width: 160px; }
+
+.dashboard-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 148px), 1fr));
+  gap: 10px;
+}
+.dashboard-filters label, .dashboard-select {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.dashboard-panel select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  background: var(--surface);
+}
+.dashboard-panel button { justify-self: start; }
+.dashboard-panel details[open] > summary { margin-bottom: 10px; }
+.dashboard-panel summary { cursor: pointer; color: var(--accent); }
+.dashboard-statuses { display: flex; flex-wrap: wrap; gap: 7px; }
+.dashboard-statuses li { padding: 6px 9px; border-radius: 8px; background: var(--brand-tint); font-size: 12px; }
+.dashboard-list { padding-inline-start: 20px; list-style: revert; font-size: 13px; line-height: 1.75; }
+.dashboard-list a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+@media (min-width: 880px) {
+  .dashboard-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
