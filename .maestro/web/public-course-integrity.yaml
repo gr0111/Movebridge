@@ -32,6 +32,10 @@ name: Public course availability and schedule safeguards
       text: '^나의 운동 시간표\s*$'
     direction: UP
 - tapOn: '^나의 운동 시간표\s*$'
+- scrollUntilVisible:
+    element:
+      text: "선택한 주의 시간표가 비어 있어요."
+    direction: DOWN
 - assertVisible: "선택한 주의 시간표가 비어 있어요."
 - scrollUntilVisible:
     element:

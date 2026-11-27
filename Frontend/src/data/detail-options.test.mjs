@@ -49,7 +49,7 @@ test("A: flexibility options are actual yoga/Pilates/SNPE sports and classified 
 
 test("B: strength sports include actual health/TRX, not Pilates or golf from a strength video title", () => {
   const options = getDetailOptions({ ...base, field: "근력·체력 향상" });
-  assert.deepEqual(options.sports, [...new Set(["헬스", "TRX", ...externalDisciplines("근력·체력 향상")])]);
+  assert.deepEqual(options.sports, [...new Set(["헬스", "TRX", "근력운동", ...externalDisciplines("근력·체력 향상")])]);
   assert.ok(!options.sports.includes("필라테스"));
   assert.ok(!options.sports.includes("골프"));
   assert.ok(options.videoTitles.includes("골프 비거리 향상을 위한 근력운동"));
@@ -67,9 +67,14 @@ test("C: a field change clears incompatible selections and the next search conta
   assert.equal(updateDiscoveryFilter(selected, "field", "전체 분야").sport, "필라테스");
 });
 
-test("D: all fields/offline includes every real nonempty source sport, without adding category labels", () => {
+test("D: all fields/offline offers canonical sports while raw and unresolved labels remain searchable", () => {
   const options = getDetailOptions({ ...base, mode: "offline" });
-  assert.deepEqual(options.sports, [...new Set(rawCourses.map((row) => row.종목).filter(Boolean))]);
+  assert.equal(options.sports.length, 19);
+  for (const sport of ["배드민턴", "탁구", "실내승마", "모던", "라틴"]) assert.ok(options.sports.includes(sport));
+  for (const label of ["방학특강", "실내승마교실", "바디슬림", "바디 트레이닝"]) {
+    assert.ok(!options.sports.includes(label));
+    assert.ok(searchDiscovery({ ...base, mode: "offline", sport: label }).offline.length > 0);
+  }
   assert.deepEqual(options.videoTitles, []);
   assert.ok(!options.sports.includes("미기재"));
   assert.ok(!options.sports.includes("유연성·스트레칭"));
@@ -102,7 +107,7 @@ test("F: modes filter both option groups and reset only incompatible selections"
   const strength = { ...base, field: "근력·체력 향상" };
   assert.deepEqual(getDetailOptions({ ...strength, mode: "offline" }).sports, ["헬스"]);
   assert.deepEqual(getDetailOptions({ ...strength, mode: "offline" }).videoTitles, []);
-  assert.deepEqual(getDetailOptions({ ...strength, mode: "online" }).sports, [...new Set(["헬스", "TRX", ...externalDisciplines("근력·체력 향상")])]);
+  assert.deepEqual(getDetailOptions({ ...strength, mode: "online" }).sports, [...new Set(["헬스", "TRX", "근력운동", ...externalDisciplines("근력·체력 향상")])]);
   assert.equal(
     updateDiscoveryFilter({ ...strength, mode: "online", sport: "TRX" }, "mode", "offline").sport,
     "전체 종목",

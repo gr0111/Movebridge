@@ -1,0 +1,32 @@
+url: http://127.0.0.1:4175/
+name: Canonical sport and verified video linkage
+---
+- launchApp
+- tapOn: "^운동 찾기$"
+- scrollUntilVisible:
+    element:
+      id: "^sport$"
+    direction: DOWN
+- tapOn:
+    id: "^sport$"
+- inputText: "줌바댄스"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "나의 조건으로 찾은 공개 자료"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: '^same-sport-videos$'
+    direction: DOWN
+- assertVisible:
+    id: '^same-sport-videos$'
+- scrollUntilVisible:
+    element:
+      text: '^20 Minute Dance Diet Workout.*$'
+    direction: DOWN
+- assertVisible: "외부 YouTube"
+- scrollUntilVisible:
+    element:
+      text: "표본 추천운동경험 · 판단 보류"
+    direction: DOWN
+- assertVisible: "표본 추천운동경험 · 판단 보류"

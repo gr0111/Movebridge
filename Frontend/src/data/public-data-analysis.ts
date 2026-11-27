@@ -1,4 +1,4 @@
-import { courseSportAliases, inferHolidaySport } from "./course-sport.ts";
+import { courseSportAliases, danceSportFromTitle, inferHolidaySport } from "./course-sport.ts";
 import { courses } from "./search.ts";
 import type { Course } from "./search.ts";
 import { rawVideos } from "./sample-data.ts";
@@ -20,7 +20,7 @@ const analysisFields = [
   "운동 외 콘텐츠",
 ] as const;
 
-type AnalysisField = (typeof analysisFields)[number];
+export type AnalysisField = (typeof analysisFields)[number];
 type Classification = {
   field: AnalysisField;
   sport: string | null;
@@ -77,10 +77,7 @@ export function classifyAnalysisCourse(course: Pick<Course, "sport" | "title">):
   const title = course.title.replace(/헬스\s*등록\s*필수/g, "");
   const named = courseDisciplines.get(normalize(courseSportAliases[rawSport] ?? rawSport));
   if (named) {
-    const dance =
-      named.sport === "댄스스포츠"
-        ? title.trim().match(/^(?:\d{2,4}\.\s*)?(모던|라틴)(?!\p{L})/u)?.[1]
-        : undefined;
+    const dance = named.sport === "댄스스포츠" ? danceSportFromTitle(title) : undefined;
     return {
       ...named,
       sport: dance ?? named.sport,

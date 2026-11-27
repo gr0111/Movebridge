@@ -77,7 +77,7 @@ test("two documented holiday aliases are flagged as inferred and the search fiel
   );
   for (const id of [307, 309]) {
     assert.equal(analyzedCourses.get(id).sport, "배드민턴");
-    assert.equal(courseDiscovery.get(id).field, "기타 운동");
+    assert.equal(courseDiscovery.get(id).field, "라켓 스포츠");
   }
   assert.deepEqual(
     [...analyzedCourses].filter(([, result]) => result.sport === null).map(([id]) => id),

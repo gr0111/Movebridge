@@ -77,7 +77,7 @@ test("badminton search, field selection, and option validation all include both 
   const query = { ...all, field: "기타 운동", sport: "배드민턴" };
   const matches = searchDiscovery(query).offline;
   for (const course of holidayBadminton) {
-    assert.equal(classifyCourse(course).field, "기타 운동");
+    assert.equal(classifyCourse(course).field, "라켓 스포츠");
     assert.ok(searchCourses(query).some((match) => match.id === course.id));
     assert.ok(matches.some((match) => match.id === course.id));
   }
