@@ -6,8 +6,14 @@ name: Public data dashboard and charts
 - assertVisible: "공공체육 데이터 현황"
 - scrollUntilVisible:
     element:
+      text: "^2026년 샘플 세부 분석$"
+    direction: DOWN
+- tapOn: "^2026년 샘플 세부 분석$"
+- scrollUntilVisible:
+    element:
       text: "운동 분야별 강좌·기관 영상 비교"
     direction: DOWN
+    timeout: 35000
 - assertVisible: "운동 분야별 강좌·기관 영상 비교"
 - scrollUntilVisible:
     element:
