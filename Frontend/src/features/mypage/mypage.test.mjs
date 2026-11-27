@@ -46,8 +46,9 @@ test("profile created_at is formatted in Seoul time", () => {
 });
 
 test("weekly preview uses the existing weekdays and removes a deleted course from every day", () => {
-  const late = { id: 1, days: [0, 1], start: 18 };
-  const early = { id: 2, days: [0], start: 9 };
+  const reference = { title: "강좌", rawTime: "09:00-10:00", sport: "요가", audience: "", endDate: "9999-12-31" };
+  const late = { ...reference, id: 1, days: [0, 1], rawTime: "18:00-19:00", start: 18, end: 19 };
+  const early = { ...reference, id: 2, days: [0], start: 9, end: 10 };
   const week = weeklyPreview([late, early], ["월", "화", "수"]);
   assert.deepEqual(
     week.map((day) => day.courses.map(({ id }) => id)),

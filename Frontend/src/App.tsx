@@ -16,6 +16,7 @@ import {
 } from "./data/discovery";
 import type { DiscoveryFilters as Filters, ResultSort } from "./data/discovery";
 import { getCourseDisplay } from "./data/course-display";
+import { getCourseStatus, sourcePauseTag } from "./data/course-status";
 import SportPictogram from "./components/SportPictogram";
 import {
   courses,
@@ -343,6 +344,7 @@ function App() {
   const openAccount = () => setAccountRequest((count) => count + 1);
   const openSchedule = () => navigate("schedule");
   const videoDetailUrl = originalVideoLink(videoDetail?.url);
+  const detailDisplay = detail ? getCourseDisplay(detail) : null;
   const renderCourse = (course: Course, showBeginner = false) => (
     <CourseCard
       key={course.id}
@@ -840,31 +842,39 @@ function App() {
             {!!selectedCourses.length && (
               <div className="saved-list">
                 <h3>담아둔 강좌</h3>
-                {selectedCourses.map((c) => (
-                  <div key={c.id}>
-                    <span>
-                      {c.title}{" "}
-                      <small>
-                        {c.rawDays} · {c.rawTime}
-                        {c.parentheticalDays && " · 괄호 요일 확인 필요"}
-                      </small>
-                    </span>
-                    <span>
-                      <button
-                        className="text-button bookmark-action"
-                        disabled={!bookmarks.ready || bookmarks.pending.has(c.id)}
-                        aria-busy={bookmarks.pending.has(c.id)}
-                        onClick={() => toggleSaved(c.id)}
-                      >
-                        {bookmarks.pending.has(c.id) ? "해제 중…" : "시간표에서 빼기"}
-                        <Icon name="close" size={14} />
-                      </button>
-                      {bookmarks.errors.has(c.id) && (
-                        <small className="bookmark-error" role="alert">{bookmarks.errors.get(c.id)}</small>
-                      )}
-                    </span>
-                  </div>
-                ))}
+                {selectedCourses.map((c) => {
+                  const reasons = getCourseStatus(c).scheduleHoldReasons();
+                  return (
+                    <div key={c.id}>
+                      <span>
+                        <button type="button" className="text-button" onClick={() => setDetail(c)}>
+                          {c.title}
+                        </button>{" "}
+                        <small>
+                          {c.rawDays} · {c.rawTime}
+                          {c.parentheticalDays && " · 괄호 요일 확인 필요"}
+                        </small>
+                        {!!reasons.length && <small>자동 시간표 확인 · {reasons.join(" · ")}</small>}
+                      </span>
+                      <span>
+                        <button
+                          className="text-button bookmark-action"
+                          disabled={!bookmarks.ready || bookmarks.pending.has(c.id)}
+                          aria-busy={bookmarks.pending.has(c.id)}
+                          onClick={() => toggleSaved(c.id)}
+                        >
+                          {bookmarks.pending.has(c.id) ? "해제 중…" : "북마크 해제"}
+                          <Icon name="close" size={14} />
+                        </button>
+                        {bookmarks.errors.has(c.id) && (
+                          <small className="bookmark-error" role="alert">
+                            {bookmarks.errors.get(c.id)}
+                          </small>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1208,18 +1218,19 @@ function App() {
             <span className="sample-tag">
               {videoDetail?.source === "youtube" ? "외부 YouTube" : "첨부 공공데이터 샘플 · 전체 자료 아님"}
             </span>
-            {detail ? (
+            {detail && detailDisplay ? (
               <div className="course-detail-heading">
                 <span className="sport-pictogram-box sport-pictogram-box-detail">
-                  <SportPictogram icon={getCourseDisplay(detail).pictogramKey} size={36} />
+                  <SportPictogram icon={detailDisplay.pictogramKey} size={36} />
                 </span>
-                <h2 id="modal-title">{getCourseDisplay(detail).displayTitle}</h2>
+                <h2 id="modal-title">{detailDisplay.displayTitle}</h2>
               </div>
             ) : (
               <h2 id="modal-title">{videoDetail?.title}</h2>
             )}
-            {detail ? (
+            {detail && detailDisplay ? (
               <>
+                <p className="section-footnote">{detailDisplay.status.availability}</p>
                 <dl className="detail-list">
                   <div>
                     <dt>CSV 원본 강좌명</dt>
@@ -1228,9 +1239,9 @@ function App() {
                   <div>
                     <dt>이용 대상·조건</dt>
                     <dd>
-                      {getCourseDisplay(detail).displayTags.length ? (
+                      {detailDisplay.displayTags.length ? (
                         <div className="course-detail-tags">
-                          {getCourseDisplay(detail).displayTags.map((tag) => (
+                          {detailDisplay.displayTags.map((tag) => (
                             <span className="course-condition-tag" key={tag}>
                               {tag}
                             </span>
@@ -1244,8 +1255,8 @@ function App() {
                   <div>
                     <dt>운동 종목</dt>
                     <dd>
-                      {getCourseDisplay(detail).displaySport}
-                      {getCourseDisplay(detail).sportResolutionStatus === "inferred" && " (추정)"}
+                      {detailDisplay.displaySport}
+                      {detailDisplay.sportResolutionStatus === "inferred" && " (추정)"}
                     </dd>
                   </div>
                   <div>
@@ -1255,36 +1266,38 @@ function App() {
                   <div>
                     <dt>표시 종목 확인 근거</dt>
                     <dd>
-                      {getCourseDisplay(detail).sportResolutionStatus === "inferred"
-                        ? `원본 명칭에 따른 종목 추정: ${getCourseDisplay(detail).sportResolutionEvidence}`
-                        : getCourseDisplay(detail).sportResolutionStatus === "title"
+                      {detailDisplay.sportResolutionStatus === "inferred"
+                        ? `원본 명칭에 따른 종목 추정: ${detailDisplay.sportResolutionEvidence}`
+                        : detailDisplay.sportResolutionStatus === "title"
                           ? "원본 강좌명에 명시된 종목·세부 명칭을 표시했습니다. 원본 종목 필드는 변경하지 않았습니다."
-                          : getCourseDisplay(detail).sportResolutionStatus === "unresolved"
+                          : detailDisplay.sportResolutionStatus === "unresolved"
                             ? "종목을 확정하지 않았습니다. 원본 표기를 유지하며 추가 확인이 필요합니다."
                             : "원본 종목 필드를 기준으로 기본 종목명을 표시했습니다."}
                     </dd>
                   </div>
-                  {getCourseDisplay(detail).instructors.length > 0 && (
+                  {detailDisplay.instructors.length > 0 && (
                     <div>
                       <dt>강사명 (원본 표기)</dt>
-                      <dd>{getCourseDisplay(detail).instructors.join(" · ")}</dd>
+                      <dd>{detailDisplay.instructors.join(" · ")}</dd>
                     </div>
                   )}
                   <div>
-                  <dt>
-                    {getCourseDisplay(detail).additionalTypes.includes("방학특강")
-                      ? "프로그램 유형"
-                      : "추출한 추가 유형"}
-                  </dt>
+                    <dt>프로그램 유형</dt>
                     <dd>
-                      {getCourseDisplay(detail).additionalTypes.join(" · ") ||
+                      {detailDisplay.additionalTypes.filter((tag) => tag !== sourcePauseTag).join(" · ") ||
                         "별도 유형 표기 확인 안 됨"}
+                      {(detailDisplay.status.program.freeUse ||
+                        detailDisplay.status.program.personalPractice) && (
+                        <small className="field-caution">
+                          자유 이용 형태의 공개 기록이에요. 실제 강습 제공 여부는 별도 확인이 필요해요.
+                        </small>
+                      )}
                     </dd>
                   </div>
-                  {getCourseDisplay(detail).packageDetails.length > 0 && (
+                  {detailDisplay.packageDetails.length > 0 && (
                     <div>
                       <dt>패키지 구성 (원본)</dt>
-                      <dd>{getCourseDisplay(detail).packageDetails.join(" · ")}</dd>
+                      <dd>{detailDisplay.packageDetails.join(" · ")}</dd>
                     </div>
                   )}
                   <div>
@@ -1306,7 +1319,7 @@ function App() {
                     </dd>
                   </div>
                   <div>
-                    <dt>수강시간</dt>
+                    <dt>원본 수강시간</dt>
                     <dd>
                       {detail.rawTime}
                       {detail.longTimeReview && (
@@ -1314,14 +1327,19 @@ function App() {
                           원본 장시간 검토 표시 · 시간 확인 필요
                         </small>
                       )}
-                      {getCourseDisplay(detail).timeConflicts.length > 0 && (
-                        <small className="field-caution">
-                          제목의 시간 표기: {getCourseDisplay(detail).timeConflicts.join(" · ")}.
-                          표시용 제목은 수강시간 필드를 우선합니다.
-                        </small>
-                      )}
                     </dd>
                   </div>
+                  {!!detailDisplay.timeConflicts.length && (
+                    <div>
+                      <dt>강좌명에 적힌 시간</dt>
+                      <dd>
+                        {detailDisplay.timeConflicts.join(" · ")}
+                        <small className="field-caution">
+                          시간 확인 필요 · 두 표기가 달라 자동 일정 배치를 보류해요.
+                        </small>
+                      </dd>
+                    </div>
+                  )}
                   <div>
                     <dt>공개 데이터 수강금액</dt>
                     <dd>{money(detail.price)}원</dd>
@@ -1330,6 +1348,30 @@ function App() {
                     <dt>수강월</dt>
                     <dd>{detail.month}</dd>
                   </div>
+                  <div>
+                    <dt>원본 수강시작일</dt>
+                    <dd>{detail.startDate || "확인 불가"}</dd>
+                  </div>
+                  <div>
+                    <dt>기록상 종료일</dt>
+                    <dd>
+                      {detailDisplay.status.endLabel}
+                      {detailDisplay.status.endedInRecord && (
+                        <small className="field-caution">
+                          기록상 종료일 경과 · 종료일 이후 자동 일정에서 제외돼요.
+                        </small>
+                      )}
+                    </dd>
+                  </div>
+                  {detailDisplay.status.pausedInSource && (
+                    <div>
+                      <dt>원본 상태 표기</dt>
+                      <dd>
+                        원본에 일시중지 표기 · 현재 운영·모집 미확인
+                        <small className="field-caution">기본 추천과 자동 시간표에서 제외돼요.</small>
+                      </dd>
+                    </div>
+                  )}
                   <div>
                     <dt>수강대상 원본 필드</dt>
                     <dd>{detail.audience}</dd>
@@ -1351,7 +1393,7 @@ function App() {
                     강좌명 또는 수강대상 필드의 표기이며, 현재 적용 중인 이용 규정이나 등록 가능
                     여부를 확인한 것이 아닙니다. ‘초급’ 등 수준 표현도 원본 명칭일 뿐, 실제 난이도나
                     초보자 적합성을 보장하지 않습니다.
-                    {getCourseDisplay(detail).needsReview &&
+                    {detailDisplay.needsReview &&
                       " 일부 종목·요일·시간은 추가 확인이 필요합니다. 추정하지 않은 원본 표현은 위 CSV 원본 강좌명과 원본 필드에서 확인해 주세요."}
                   </p>
                 </div>
@@ -1366,8 +1408,8 @@ function App() {
                   {bookmarks.pending.has(detail.id)
                     ? saved.has(detail.id) ? "해제 중…" : "저장 중…"
                     : saved.has(detail.id)
-                      ? "시간표에 담았어요 · 다시 눌러 해제"
-                      : "나의 참고 시간표에 담기"}
+                      ? "북마크에 저장했어요 · 다시 눌러 해제"
+                      : "강좌 북마크에 저장하기"}
                 </button>
                 {bookmarks.errors.has(detail.id) && (
                   <p className="bookmark-error" role="alert">{bookmarks.errors.get(detail.id)}</p>
@@ -1500,18 +1542,29 @@ function CourseCard({
   onSave: () => void;
   onDetail: () => void;
 }) {
-  const { displayTitle, displayTags, pictogramKey, sportResolutionStatus, additionalTypes } =
+  const { displayTitle, displayTags, pictogramKey, sportResolutionStatus, additionalTypes, status } =
     getCourseDisplay(course);
   return (
     <article className="course-card">
       <div className="course-top">
         <div className="course-labels">
-          <span className="offline-label">오프라인 강좌</span>
-          {displayTags.map((tag) => (
+          <span className="offline-label">
+            {status.program.personalPractice || status.program.freeUse
+              ? "오프라인 이용 기록"
+              : "오프라인 강좌"}
+          </span>
+          {status.program.tags.map((tag) => (
             <span className="course-condition-tag" key={tag}>
               {tag}
             </span>
           ))}
+          {displayTags
+            .filter((tag) => tag !== "임직원" || !status.program.employeeOnly)
+            .map((tag) => (
+              <span className="course-condition-tag" key={tag}>
+                {tag}
+              </span>
+            ))}
           {additionalTypes.includes("방학특강") && (
             <span className="course-condition-tag">방학특강</span>
           )}
@@ -1569,10 +1622,28 @@ function CourseCard({
               괄호 요일 의미 확인 필요
             </p>
           )}
-          {course.longTimeReview && (
+          {(status.timeConflicts.length > 0 || !status.timeLabel) && (
+            <p className="course-caution">
+              <Icon name="info" size={12} />
+              시간 확인 필요 · 자동 일정 배치 보류
+            </p>
+          )}
+          {course.longTimeReview && status.timeLabel && !status.timeConflicts.length && (
             <p className="course-caution">
               <Icon name="info" size={12} />
               수강시간 확인 필요
+            </p>
+          )}
+          {status.pausedInSource && (
+            <p className="course-caution">
+              <Icon name="info" size={12} />
+              원본에 일시중지 표기 · 자동 일정 제외
+            </p>
+          )}
+          {status.endedInRecord && (
+            <p className="course-caution">
+              <Icon name="info" size={12} />
+              기록상 종료일 경과
             </p>
           )}
         </div>
@@ -1587,7 +1658,7 @@ function CourseCard({
       <div className="course-source">
         <p>
           데이터 출처 · 한국체육산업개발(주)
-          <span>첨부 샘플 · 현재 운영·모집 및 일정 확인 필요</span>
+          <span>{status.availability}</span>
         </p>
         <button className="round-arrow" onClick={onDetail} aria-label={`${course.title} 상세 보기`}>
           <Icon name="arrow" size={17} />

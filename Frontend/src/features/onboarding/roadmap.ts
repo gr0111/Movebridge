@@ -1,4 +1,5 @@
 import { analyzeBeginnerTitle, interestFields } from "../../data/discovery.ts";
+import { getCourseStatus } from "../../data/course-status.ts";
 import type { Experience, InterestField } from "../../data/discovery.ts";
 import {
   analyzedCourses,
@@ -42,7 +43,8 @@ const isSearchField = (field: string): field is InterestField =>
 
 const courses: Entry<Course>[] = searchableCourses.flatMap((record) => {
   const classification = analyzedCourses.get(record.id);
-  return classification && isSportField(classification.field) && classification.sport
+  return classification && isSportField(classification.field) && classification.sport &&
+    getCourseStatus(record).canRecommend
     ? [
         {
           record,

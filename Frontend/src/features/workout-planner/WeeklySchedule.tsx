@@ -66,7 +66,8 @@ export default function WeeklySchedule({
     setSelection({ id: crypto.randomUUID(), creating: true });
     onCreateOpened?.();
   }, [requestCreate, planner.status, onCreateOpened]);
-  const dates = weekOf(addDays(koreaDate(), offset * 7));
+  const today = koreaDate();
+  const dates = useMemo(() => weekOf(addDays(today, offset * 7)), [today, offset]);
   const historical = planner.completions
     .flatMap(({ plan_id, performed_on }) => {
       if (!dates.includes(performed_on)) return [];
@@ -74,7 +75,10 @@ export default function WeeklySchedule({
       return plan && plan.day_of_week !== dateWeekday(performed_on) ? [{ plan, performed_on }] : [];
     })
     .sort((a, b) => a.performed_on.localeCompare(b.performed_on));
-  const entries = useMemo(() => scheduleEntries(courses, planner.plans), [courses, planner.plans]);
+  const entries = useMemo(
+    () => scheduleEntries(courses, planner.plans, dates),
+    [courses, planner.plans, dates],
+  );
   const layout = days.map((_, day) => dayLayout(entries.filter((entry) => entry.day === day)));
   const keys = new Set(
     planner.completions.map(({ plan_id, performed_on }) => completionKey(plan_id, performed_on)),
@@ -119,7 +123,7 @@ export default function WeeklySchedule({
         <span>
           {formatTime(entry.start)}–{formatTime(entry.end)}
         </span>
-        <span>{personal ? (complete ? "직접 등록 · 완료" : "직접 등록") : "공공데이터 강좌"}</span>
+        <span>{personal ? (complete ? "직접 등록 · 완료" : "직접 등록") : "공개 강좌 참고 일정"}</span>
       </>
     );
   }
@@ -227,8 +231,12 @@ export default function WeeklySchedule({
         {empty && (
           <div className="schedule-empty">
             <Icon name="calendar" size={32} />
-            <h3>이번 주 시간표가 비어 있어요.</h3>
-            <p>운동을 직접 추가하거나 강좌를 북마크해 보세요.</p>
+            <h3>선택한 주의 시간표가 비어 있어요.</h3>
+            <p>
+              {courses.length
+                ? "담아둔 강좌 목록에서 자동 배치 조건을 확인할 수 있어요."
+                : "운동을 직접 추가하거나 강좌를 북마크해 보세요."}
+            </p>
             <button type="button" className="secondary-button" onClick={findCourses}>
               운동 찾으러 가기
             </button>
@@ -236,7 +244,7 @@ export default function WeeklySchedule({
         )}
       </div>
       <div className="workout-agenda">
-        {empty && <p>이번 주 시간표가 비어 있어요.</p>}
+        {empty && <p>선택한 주의 시간표가 비어 있어요.</p>}
         {layout.map(
           ({ positioned }, day) =>
             positioned.length > 0 && (

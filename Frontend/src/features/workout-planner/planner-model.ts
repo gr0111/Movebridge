@@ -1,4 +1,7 @@
+import { getCourseStatus, koreaDate } from "../../data/course-status.ts";
 import type { Course } from "../../data/search.ts";
+
+export { koreaDate } from "../../data/course-status.ts";
 
 export type WorkoutDraft = {
   title: string;
@@ -32,19 +35,7 @@ export function validateWorkoutDraft(draft: WorkoutDraft) {
   return { fields } as const;
 }
 
-const koreaCalendar = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Seoul",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
 const dateString = (date: Date) => date.toISOString().slice(0, 10);
-
-export function koreaDate(now = new Date()) {
-  const parts = koreaCalendar.formatToParts(now);
-  const part = (name: "year" | "month" | "day") => parts.find((p) => p.type === name)!.value;
-  return `${part("year")}-${part("month")}-${part("day")}`;
-}
 
 export function dateWeekday(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith("0000")) return null;
@@ -102,19 +93,26 @@ export type ScheduleEntry = Timed &
   ({ kind: "course"; source: Course } | { kind: "personal"; source: WorkoutPlan });
 const decimalTime = (value: string) => Number(value.slice(0, 2)) + Number(value.slice(3, 5)) / 60;
 
-export function scheduleEntries(courses: readonly Course[], plans: readonly WorkoutPlan[]) {
+export function scheduleEntries(
+  courses: readonly Course[],
+  plans: readonly WorkoutPlan[],
+  dates = weekOf(),
+) {
   const entries: ScheduleEntry[] = [
-    ...courses.flatMap((course) =>
-      course.days.map((day) => ({
-        kind: "course" as const,
-        source: course,
-        key: `course:${course.id}`,
-        title: course.title,
-        day,
-        start: course.start,
-        end: course.end,
-      })),
-    ),
+    ...courses.flatMap((course) => {
+      const status = getCourseStatus(course);
+      return course.days
+        .filter((day) => dates[day] && !status.scheduleHoldReasons(dates[day]).length)
+        .map((day) => ({
+          kind: "course" as const,
+          source: course,
+          key: `course:${course.id}`,
+          title: course.title,
+          day,
+          start: course.start,
+          end: course.end,
+        }));
+    }),
     ...plans.map((plan) => ({
       kind: "personal" as const,
       source: plan,
